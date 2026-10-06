@@ -18,7 +18,7 @@ npm run dev
 
 Después de eso, en cualquier otro equipo basta con `npm install`.
 
-Abre la URL que muestra Vite, pulsa ⚙️ y pega tu API key (gratis en https://aistudio.google.com/apikey). La key se guarda solo en el `localStorage` del dispositivo, no en el repositorio ni en el bundle.
+Abre http://localhost:5180 (el puerto está fijado en `vite.config.js`), pulsa ⚙️ y pega tu API key (gratis en https://aistudio.google.com/apikey). La key se guarda solo en el `localStorage` del dispositivo, no en el repositorio ni en el bundle.
 
 Opcional: copia `.env.example` a `.env` para fijar una key y un modelo por defecto en desarrollo. Cualquier variable `VITE_*` acaba incrustada en el JS final, así que no la uses en builds que repartas.
 
