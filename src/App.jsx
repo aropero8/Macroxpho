@@ -78,7 +78,14 @@ export default function App() {
       // Los días pasados son de solo lectura.
       content =
         screen.date === today ? (
-          <AddMeal date={screen.date} tipo={screen.tipo} onSaved={() => openDay(screen.date)} />
+          <AddMeal
+            date={screen.date}
+            tipo={screen.tipo}
+            apiKey={apiKey}
+            model={model}
+            onSaved={() => openDay(screen.date)}
+            onOpenSettings={() => go({ name: "settings", prev: screen })}
+          />
         ) : (
           <div className="card">
             <p>Ya no es hoy: los días pasados no se pueden editar.</p>
