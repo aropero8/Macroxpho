@@ -1,54 +1,153 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { dateKey } from "../lib/date.js";
+import { exportBackup, getSettings, importBackup } from "../lib/storage.js";
 
-export default function Settings({ apiKey, model, defaultModel, onSave, onClose }) {
+export default function Settings({ apiKey, model, defaultModel, settings, onSave, onClose, onImported }) {
   const [key, setKey] = useState(apiKey);
   const [mdl, setMdl] = useState(model);
+  const [protein, setProtein] = useState(String(settings.proteinGoal));
+  const [kcal, setKcal] = useState(settings.kcalGoal ? String(settings.kcalGoal) : "");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const importRef = useRef(null);
+
+  function save() {
+    const proteinGoal = Math.round(Number(protein));
+    const kcalGoal = kcal.trim() ? Math.round(Number(kcal)) : null;
+    if (!(proteinGoal > 0)) return setError("El objetivo de proteína debe ser un número mayor que 0.");
+    if (kcalGoal !== null && !(kcalGoal > 0))
+      return setError("El objetivo de kcal debe ser un número mayor que 0, o dejarlo vacío.");
+    try {
+      onSave({ apiKey: key.trim(), model: mdl.trim() || defaultModel, proteinGoal, kcalGoal });
+    } catch {
+      setError("No se pudieron guardar los ajustes.");
+    }
+  }
+
+  function exportFile() {
+    const blob = new Blob([exportBackup()], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `macrosnap-copia-${dateKey()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function importFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError("");
+    setMessage("");
+    if (!window.confirm("La copia sustituirá todos los días guardados en este dispositivo. ¿Continuar?"))
+      return;
+    try {
+      const n = importBackup(await file.text());
+      const s = getSettings();
+      setProtein(String(s.proteinGoal));
+      setKcal(s.kcalGoal ? String(s.kcalGoal) : "");
+      onImported();
+      setMessage(`Copia importada: ${n} ${n === 1 ? "día" : "días"}.`);
+    } catch (err) {
+      setError(err.message || "No se pudo importar la copia.");
+    }
+  }
 
   return (
-    <div className="card">
-      <h2>Ajustes</h2>
+    <>
+      <div className="card">
+        <h2>Ajustes</h2>
 
-      <label className="field">
-        <span>API key de Gemini</span>
-        <input
-          type="password"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-          placeholder="AIza..."
-          autoComplete="off"
-        />
-        <small>
-          Gratis en{" "}
-          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
-            Google AI Studio
-          </a>
-          . Se guarda solo en este dispositivo.
-        </small>
-      </label>
+        <label className="field">
+          <span>Objetivo diario de proteína (g)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            value={protein}
+            onChange={(e) => setProtein(e.target.value)}
+          />
+        </label>
 
-      <label className="field">
-        <span>Modelo</span>
-        <input
-          type="text"
-          value={mdl}
-          onChange={(e) => setMdl(e.target.value)}
-          placeholder={defaultModel}
-          autoCapitalize="off"
-        />
-        <small>Usa un modelo Flash / Flash-Lite para la capa gratuita.</small>
-      </label>
+        <label className="field">
+          <span>Objetivo diario de kcal (opcional)</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="1"
+            value={kcal}
+            onChange={(e) => setKcal(e.target.value)}
+            placeholder="Sin objetivo"
+          />
+        </label>
 
-      <div className="row">
-        <button className="btn ghost" onClick={onClose}>
-          Cancelar
-        </button>
-        <button
-          className="btn primary"
-          onClick={() => onSave(key.trim(), mdl.trim() || defaultModel)}
-        >
-          Guardar
-        </button>
+        <label className="field">
+          <span>API key de Gemini</span>
+          <input
+            type="password"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder="AIza..."
+            autoComplete="off"
+          />
+          <small>
+            Gratis en{" "}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">
+              Google AI Studio
+            </a>
+            . Se guarda solo en este dispositivo.
+          </small>
+        </label>
+
+        <label className="field">
+          <span>Modelo</span>
+          <input
+            type="text"
+            value={mdl}
+            onChange={(e) => setMdl(e.target.value)}
+            placeholder={defaultModel}
+            autoCapitalize="off"
+          />
+          <small>Usa un modelo Flash / Flash-Lite para la capa gratuita.</small>
+        </label>
+
+        <div className="row">
+          <button className="btn ghost" onClick={onClose}>
+            Cancelar
+          </button>
+          <button className="btn primary" onClick={save}>
+            Guardar
+          </button>
+        </div>
       </div>
-    </div>
+
+      <div className="card">
+        <h2>Copia de seguridad</h2>
+        <p className="hint">
+          Incluye tus días y objetivos. No incluye la API key ni las fotos en miniatura.
+        </p>
+        <div className="row">
+          <button className="btn" onClick={exportFile}>
+            Exportar copia (JSON)
+          </button>
+          <button className="btn" onClick={() => importRef.current?.click()}>
+            Importar copia
+          </button>
+        </div>
+        <input
+          ref={importRef}
+          type="file"
+          accept="application/json,.json"
+          hidden
+          onChange={importFile}
+        />
+      </div>
+
+      {message && <div className="success">{message}</div>}
+      {error && <div className="error">{error}</div>}
+    </>
   );
 }

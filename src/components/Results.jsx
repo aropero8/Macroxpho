@@ -1,33 +1,7 @@
-const round = (n) => Math.round(n || 0);
+import { round, scaled, sumTotals } from "../lib/nutrition.js";
 
-// Cada plato guarda los valores base de la estimación y los gramos actuales;
-// al editar los gramos, los macros se reescalan proporcionalmente.
-function scaled(d) {
-  const f = d.gramosBase > 0 ? d.gramos / d.gramosBase : 1;
-  return {
-    kcal: d.kcal * f,
-    proteina_g: d.proteina_g * f,
-    carbohidratos_g: d.carbohidratos_g * f,
-    grasas_g: d.grasas_g * f,
-  };
-}
-
-export function totals(dishes) {
-  return dishes.reduce(
-    (acc, d) => {
-      const s = scaled(d);
-      acc.kcal += s.kcal;
-      acc.proteina_g += s.proteina_g;
-      acc.carbohidratos_g += s.carbohidratos_g;
-      acc.grasas_g += s.grasas_g;
-      return acc;
-    },
-    { kcal: 0, proteina_g: 0, carbohidratos_g: 0, grasas_g: 0 }
-  );
-}
-
-export default function Results({ dishes, confianza, notas, onGramsChange, onRemove }) {
-  const t = totals(dishes);
+export default function Results({ dishes, confianza, notas, readOnly, onGramsChange, onRemove }) {
+  const t = sumTotals(dishes);
 
   return (
     <div className="card">
@@ -59,21 +33,27 @@ export default function Results({ dishes, confianza, notas, onGramsChange, onRem
             <li key={i}>
               <div className="dish-head">
                 <strong>{d.nombre}</strong>
-                <button className="icon" onClick={() => onRemove(i)} aria-label="Quitar plato">
-                  ✕
-                </button>
+                {!readOnly && (
+                  <button className="icon" onClick={() => onRemove(i)} aria-label="Quitar plato">
+                    ✕
+                  </button>
+                )}
               </div>
               <div className="dish-body">
-                <label className="grams">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min="0"
-                    value={d.gramos}
-                    onChange={(e) => onGramsChange(i, Number(e.target.value))}
-                  />
-                  <span>g</span>
-                </label>
+                {readOnly ? (
+                  <span className="grams">{round(d.gramos)} g</span>
+                ) : (
+                  <label className="grams">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min="0"
+                      value={d.gramos}
+                      onChange={(e) => onGramsChange(i, Number(e.target.value))}
+                    />
+                    <span>g</span>
+                  </label>
+                )}
                 <span className="dish-macros">
                   {round(s.kcal)} kcal · P {round(s.proteina_g)} · C {round(s.carbohidratos_g)} · G{" "}
                   {round(s.grasas_g)}
@@ -85,7 +65,9 @@ export default function Results({ dishes, confianza, notas, onGramsChange, onRem
       </ul>
 
       {notas && <p className="notes">{notas}</p>}
-      <p className="hint">Estimación aproximada. Ajusta los gramos si conoces la ración real.</p>
+      {!readOnly && (
+        <p className="hint">Estimación aproximada. Ajusta los gramos si conoces la ración real.</p>
+      )}
     </div>
   );
 }

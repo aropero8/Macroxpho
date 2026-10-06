@@ -1,163 +1,144 @@
-import { useRef, useState } from "react";
-import { analyzeFoodImage, DEFAULT_MODEL } from "./lib/gemini.js";
-import { prepareImage } from "./lib/image.js";
+import { useEffect, useState } from "react";
+import { DEFAULT_MODEL } from "./lib/gemini.js";
+import { dateKey } from "./lib/date.js";
+import { getApiConfig, getSettings, saveApiConfig, saveSettings } from "./lib/storage.js";
+import AddMeal from "./components/AddMeal.jsx";
+import DayView from "./components/DayView.jsx";
+import Home from "./components/Home.jsx";
+import MealView from "./components/MealView.jsx";
 import Settings from "./components/Settings.jsx";
-import Results from "./components/Results.jsx";
 import "./App.css";
 
-const LS_KEY = "macrosnap.apiKey";
-const LS_MODEL = "macrosnap.model";
-
+// Navegación sin router: `screen` describe la pantalla actual.
+//   { name: "home" }
+//   { name: "day", date }
+//   { name: "addMeal", date, tipo }
+//   { name: "meal", date, mealId }
+//   { name: "settings", prev }
 export default function App() {
   const [apiKey, setApiKey] = useState(
-    () => localStorage.getItem(LS_KEY) || import.meta.env.VITE_GEMINI_API_KEY || ""
+    () => getApiConfig().apiKey || import.meta.env.VITE_GEMINI_API_KEY || ""
   );
-  const [model, setModel] = useState(
-    () => localStorage.getItem(LS_MODEL) || DEFAULT_MODEL
-  );
-  const [showSettings, setShowSettings] = useState(!apiKey);
+  const [model, setModel] = useState(() => getApiConfig().model || DEFAULT_MODEL);
+  const [settings, setSettings] = useState(getSettings);
+  const [screen, setScreen] = useState({ name: "home" });
+  const [now, setNow] = useState(() => new Date());
+  const today = dateKey(now);
 
-  const [image, setImage] = useState(null); // { previewUrl, base64, mimeType }
-  const [note, setNote] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [result, setResult] = useState(null); // { dishes, confianza, notas }
+  // "Hoy" y el saludo se recalculan cada minuto y al volver a la app
+  // (por ejemplo, si se queda abierta pasada la medianoche).
+  useEffect(() => {
+    const tick = () => setNow(new Date());
+    const id = setInterval(tick, 60_000);
+    document.addEventListener("visibilitychange", tick);
+    window.addEventListener("focus", tick);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", tick);
+      window.removeEventListener("focus", tick);
+    };
+  }, []);
 
-  const cameraRef = useRef(null);
-  const galleryRef = useRef(null);
-
-  async function onFile(e) {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // permite volver a elegir la misma foto
-    if (!file) return;
-    setError("");
-    setResult(null);
-    try {
-      setImage(await prepareImage(file));
-    } catch {
-      setError("No se pudo leer la imagen.");
-    }
+  function go(next) {
+    setScreen(next);
+    window.scrollTo(0, 0);
   }
 
-  async function analyze() {
-    if (!image) return;
-    setLoading(true);
-    setError("");
-    setResult(null);
-    try {
-      const data = await analyzeFoodImage({
-        apiKey,
-        model,
-        base64: image.base64,
-        mimeType: image.mimeType,
-        note,
-      });
-      if (!data.es_comida || !data.platos?.length) {
-        setError("No parece que haya comida en la foto. Prueba con otra.");
-      } else {
-        setResult({
-          dishes: data.platos.map((p) => ({ ...p, gramosBase: p.gramos })),
-          confianza: data.confianza,
-          notas: data.notas,
-        });
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  const openDay = (date) => go({ name: "day", date });
+
+  function back() {
+    if (screen.name === "addMeal" || screen.name === "meal") openDay(screen.date);
+    else if (screen.name === "settings") go(screen.prev);
+    else go({ name: "home" });
   }
 
-  function saveSettings(key, mdl) {
-    localStorage.setItem(LS_KEY, key);
-    localStorage.setItem(LS_MODEL, mdl);
-    setApiKey(key);
-    setModel(mdl);
-    setShowSettings(false);
+  function onSaveSettings({ apiKey: k, model: m, proteinGoal, kcalGoal }) {
+    saveApiConfig({ apiKey: k, model: m });
+    saveSettings({ proteinGoal, kcalGoal });
+    setApiKey(k);
+    setModel(m);
+    setSettings({ proteinGoal, kcalGoal });
+    back();
   }
 
-  const updateGrams = (i, grams) =>
-    setResult((r) => ({
-      ...r,
-      dishes: r.dishes.map((d, idx) => (idx === i ? { ...d, gramos: grams } : d)),
-    }));
-
-  const removeDish = (i) =>
-    setResult((r) => ({ ...r, dishes: r.dishes.filter((_, idx) => idx !== i) }));
-
-  return (
-    <div className="app">
-      <header>
-        <h1>MacroSnap</h1>
-        <button className="icon" onClick={() => setShowSettings(true)} aria-label="Ajustes">
-          ⚙️
-        </button>
-      </header>
-
-      {showSettings ? (
+  let content;
+  switch (screen.name) {
+    case "day":
+      content = (
+        <DayView
+          date={screen.date}
+          isToday={screen.date === today}
+          settings={settings}
+          onAdd={(tipo) => go({ name: "addMeal", date: screen.date, tipo })}
+          onOpenMeal={(meal) => go({ name: "meal", date: screen.date, mealId: meal.id })}
+        />
+      );
+      break;
+    case "addMeal":
+      // Los días pasados son de solo lectura.
+      content =
+        screen.date === today ? (
+          <AddMeal date={screen.date} tipo={screen.tipo} onSaved={() => openDay(screen.date)} />
+        ) : (
+          <div className="card">
+            <p>Ya no es hoy: los días pasados no se pueden editar.</p>
+            <button className="btn" onClick={() => openDay(screen.date)}>
+              Volver al día
+            </button>
+          </div>
+        );
+      break;
+    case "meal":
+      content = (
+        <MealView
+          key={screen.mealId}
+          date={screen.date}
+          mealId={screen.mealId}
+          readOnly={screen.date !== today}
+          onDone={() => openDay(screen.date)}
+        />
+      );
+      break;
+    case "settings":
+      content = (
         <Settings
           apiKey={apiKey}
           model={model}
           defaultModel={DEFAULT_MODEL}
-          onSave={saveSettings}
-          onClose={() => setShowSettings(false)}
+          settings={settings}
+          onSave={onSaveSettings}
+          onClose={back}
+          onImported={() => setSettings(getSettings())}
         />
-      ) : (
-        <>
-          <div className="card">
-            {image ? (
-              <img className="preview" src={image.previewUrl} alt="Comida a analizar" />
-            ) : (
-              <div className="placeholder">Haz una foto a tu comida 🍽️</div>
-            )}
+      );
+      break;
+    default:
+      content = (
+        <Home now={now} today={today} settings={settings} onOpenToday={() => openDay(today)} />
+      );
+  }
 
-            <div className="row">
-              <button className="btn" onClick={() => cameraRef.current?.click()}>
-                📷 Cámara
-              </button>
-              <button className="btn" onClick={() => galleryRef.current?.click()}>
-                🖼️ Galería
-              </button>
-            </div>
+  return (
+    <div className="app">
+      <header>
+        {screen.name === "home" ? (
+          <span className="icon-spacer" />
+        ) : (
+          <button className="icon back" onClick={back} aria-label="Volver">
+            ‹
+          </button>
+        )}
+        <h1>MacroSnap</h1>
+        <button
+          className="icon"
+          onClick={() => screen.name !== "settings" && go({ name: "settings", prev: screen })}
+          aria-label="Ajustes"
+        >
+          ⚙️
+        </button>
+      </header>
 
-            <input
-              ref={cameraRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              hidden
-              onChange={onFile}
-            />
-            <input ref={galleryRef} type="file" accept="image/*" hidden onChange={onFile} />
-
-            <label className="field">
-              <span>Nota (opcional)</span>
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Ej: 200 g de arroz, con aceite de oliva"
-              />
-            </label>
-
-            <button className="btn primary full" disabled={!image || loading} onClick={analyze}>
-              {loading ? "Analizando…" : "Analizar macros"}
-            </button>
-          </div>
-
-          {error && <div className="error">{error}</div>}
-
-          {result && (
-            <Results
-              dishes={result.dishes}
-              confianza={result.confianza}
-              notas={result.notas}
-              onGramsChange={updateGrams}
-              onRemove={removeDish}
-            />
-          )}
-        </>
-      )}
+      {content}
     </div>
   );
 }
