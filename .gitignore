@@ -1,0 +1,21 @@
+# dependencias y build
+node_modules
+dist
+
+# secretos: NUNCA subir la API key
+.env
+.env.*
+!.env.example
+
+# Capacitor / Android (se generan con `npx cap add android`)
+android/app/build
+android/.gradle
+android/local.properties
+android/build
+android/capacitor-cordova-android-plugins
+
+# varios
+.DS_Store
+*.log
+.idea
+.vscode
