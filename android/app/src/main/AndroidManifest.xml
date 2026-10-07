@@ -38,4 +38,18 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Botón "Cámara" (<input type="file" capture>): Capacitor abre la app de cámara del
+      sistema con ACTION_IMAGE_CAPTURE, pero antes comprueba con resolveActivity() que
+      exista. Desde Android 11 esa comprobación devuelve null si no se declara aquí, y en
+      ese caso se abre la galería en vez de la cámara.
+      No hace falta el permiso CAMERA: la foto la hace la app de cámara, no MacroSnap.
+      Si se declarase, Capacitor pediría el permiso antes de abrir la cámara.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 </manifest>
