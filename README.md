@@ -1,6 +1,6 @@
 # MacroSnap
 
-Diario de comidas que estima las macros a partir de una foto usando la API de Gemini (modelo Flash, capa gratuita). Hecho con React + Vite y pensado para empaquetarse como app de Android con Capacitor.
+Diario de comidas que estima las macros a partir de una foto usando la API de Gemini (modelo Flash, capa gratuita). Hecho con React + Vite y empaquetado como app de Android con Capacitor (ver [App Android](#app-android-capacitor)).
 
 ## Qué hace
 
@@ -51,26 +51,47 @@ Todo se queda en el dispositivo; a Google solo se envían la foto (reducida a 10
 - Fuera de la lista quedan los 2.5 (no tienen fecha de retirada, pero Google limita el acceso a quien ya los usaba: https://ai.google.dev/gemini-api/docs/deprecations), los preview y los modelos de voz, imagen o embeddings.
 - Los límites de tu cuenta están en https://aistudio.google.com/rate-limit. En la capa gratuita Google puede usar los datos enviados para mejorar sus modelos y no está pensada para uso comercial.
 
-## Empaquetar como app Android (Capacitor)
+## App Android (Capacitor)
 
-La configuración (`capacitor.config.json`) y las dependencias de Capacitor ya están incluidas.
+El proyecto Android ya está generado y versionado en `android/` (appId `com.alberto.macrosnap`). No hace falta volver a ejecutar `npx cap add android`.
+
+### Requisitos
+
+- **Android Studio**, que incluye el SDK de Android.
+- **JDK 21 para Gradle.** Capacitor 8 compila con Java 21, y Gradle 8.14.3 (el que fija la plantilla) no funciona con el Java 25 que trae Android Studio: falla con `Unsupported class file major version 69`. En Android Studio ve a *Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK* y elige un JDK 21. Si no tienes ninguno, en ese mismo desplegable está *Download JDK…* (elige la versión 21).
+- Un móvil con **Android 7.0 o superior**.
+
+### Generar y abrir el proyecto
 
 ```bash
-npm run build
-npx cap add android
-npx cap sync android
-npx cap open android
+npm install
+npm run android
 ```
 
-`npx cap open android` abre el proyecto en Android Studio. Cada vez que cambies el código: `npm run build` y después `npx cap sync android`.
+`npm run android` compila la web (`vite build`), la copia al proyecto Android (`cap sync android`) y abre Android Studio (`cap open android`). En PowerShell usa `npm.cmd run android`. Si no encuentra Android Studio, define la variable de entorno `CAPACITOR_ANDROID_STUDIO_PATH` con la ruta de `studio64.exe`.
 
-Notas:
+Cada vez que cambies el código web, vuelve a ejecutar `npm run android`, o `npm run build` y `npx cap sync android` si ya tienes Android Studio abierto, y pulsa *Run* otra vez.
 
-- Cambia `appId` en `capacitor.config.json` por el tuyo (por ejemplo `com.tuusuario.macrosnap`) antes de generar el proyecto Android.
-- La interfaz ya está adaptada al móvil: cabecera fija que respeta la barra de estado y el notch, botones de al menos 44 px, confirmaciones como hoja inferior y sin zoom ni resaltado azul al tocar.
-- El botón "Cámara" usa `<input type="file" capture>`, que funciona en el WebView. Para una experiencia más nativa se puede migrar a `@capacitor/camera`.
-- **Botón "atrás" de Android**: para que vuelva a la pantalla anterior de la app en lugar de cerrarla hace falta `@capacitor/app` (no está instalado).
-- **Exportar copia** usa una descarga del navegador, que en el WebView de Android puede no funcionar. Para guardarla o compartirla desde la app harían falta `@capacitor/filesystem` y `@capacitor/share` (no están instalados).
+### Ejecutar en el móvil por USB
+
+1. **Activa las opciones de desarrollador** en el móvil: *Ajustes → Información del teléfono* y toca 7 veces *Número de compilación*. Según la marca, puede estar dentro de *Información de software*.
+2. **Activa la depuración por USB**: *Ajustes → Sistema → Opciones de desarrollador → Depuración por USB*. En algunos Xiaomi hay que activar también *Instalar vía USB*.
+3. **Conecta el móvil por USB** y acepta en el móvil el aviso *¿Permitir depuración por USB?* (marca *Permitir siempre desde este ordenador*). Si Windows no lo reconoce, instala el controlador USB del fabricante.
+4. En Android Studio, **espera a que termine la sincronización de Gradle**, elige tu móvil en el desplegable de dispositivos de la barra superior y pulsa **Run ▶**.
+5. La app se instala como **MacroSnap**. Ábrela, ve a ⚙️ Ajustes y pega tu API key.
+
+Con Android 11 o superior también puedes conectarlo sin cable con *Depuración inalámbrica*, desde *Pair Devices Using Wi-Fi* en Android Studio.
+
+Para depurar la parte web dentro del móvil, abre `chrome://inspect` en Chrome del ordenador con el móvil conectado.
+
+### Qué incluye la parte Android
+
+- **Cámara:** el botón "Cámara" usa `<input type="file" capture>`, que Capacitor convierte en una llamada a la app de cámara del sistema. El manifiesto declara `<queries>` para `IMAGE_CAPTURE`; sin eso, desde Android 11 se abriría la galería en vez de la cámara. No hace falta el permiso `CAMERA`, porque la foto la hace la app de cámara.
+- **Botón Atrás** (`@capacitor/app`): cierra el diálogo o el menú si hay uno abierto, si no vuelve a la pantalla anterior, y solo sale de la app desde la pantalla de inicio.
+- **Barra de estado y zonas seguras:** en `capacitor.config.json`, `SystemBars` pone iconos claros sobre el fondo oscuro y hace que `env(safe-area-inset-*)` del CSS funcione con el notch y la barra de navegación. `backgroundColor` evita el destello blanco al abrir.
+- **Icono y pantalla de inicio:** el icono es un vector (`android/app/src/main/res/drawable/ic_macrosnap_foreground.xml`) y los colores están en `res/values/colors.xml`. Los PNG de `mipmap-*` son solo para Android 7 y salen del mismo diseño.
+- **Datos:** viven en el almacenamiento de la app en el móvil. Desinstalar la app los borra, así que exporta una copia antes.
+- **Exportar copia** usa una descarga del navegador, que dentro de la app de Android puede no funcionar. Para guardarla o compartirla desde la app harían falta `@capacitor/filesystem` y `@capacitor/share` (no están instalados).
 
 ## Seguridad de la API key
 
@@ -105,5 +126,10 @@ src/
     nutrition.js             cálculo de totales
     reports.js               cálculos de los informes
     date.js                  fechas en hora local
+    backButton.js            botón Atrás de Android (@capacitor/app)
     devSample.js             comida de prueba (solo desarrollo)
+android/                     proyecto Android generado por Capacitor
+  app/src/main/AndroidManifest.xml     permisos y <queries> de la cámara
+  app/src/main/res/                    icono, pantalla de inicio y colores
+capacitor.config.json        appId, barras del sistema y color de fondo
 ```
