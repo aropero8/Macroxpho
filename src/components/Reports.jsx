@@ -56,6 +56,7 @@ export default function Reports({ today, settings, mode, anchor, onChange, onOpe
         <div className="card empty-state">
           <span aria-hidden="true">📭</span>
           <p>No hay comidas registradas {isWeek ? "esta semana" : "este mes"}.</p>
+          <p className="hint">Cuando apuntes comidas, aquí verás tus medias y gráficos.</p>
         </div>
       ) : (
         <>

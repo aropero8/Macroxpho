@@ -1,24 +1,41 @@
 import { formatLong } from "../lib/date.js";
-import { dayTotals, round } from "../lib/nutrition.js";
+import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
 import { getDay, MEAL_LABELS, SLOTS } from "../lib/storage.js";
 import MealSlot from "./MealSlot.jsx";
 import ProteinBar from "./ProteinBar.jsx";
 
-export default function DayView({ date, isToday, settings, onAdd, onOpenMeal }) {
+export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, onOpenToday }) {
   const day = getDay(date);
   const readOnly = !isToday;
+  const isEmpty = mealsOf(day).length === 0;
   const t = dayTotals(day);
+
+  const title = (
+    <div className="day-title">
+      <h2>{isToday ? "Hoy" : formatLong(date)}</h2>
+      {isToday ? <small>{formatLong(date)}</small> : <span className="badge">Solo lectura</span>}
+    </div>
+  );
+
+  // Día pasado sin nada: un aviso en vez de un resumen a cero y cuatro huecos vacíos.
+  if (readOnly && isEmpty) {
+    return (
+      <>
+        {title}
+        <div className="card empty-state">
+          <span aria-hidden="true">📭</span>
+          <p>No registraste comidas este día.</p>
+          <button className="btn" onClick={onOpenToday}>
+            Ir a hoy
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      <div className="day-title">
-        <h2>{isToday ? "Hoy" : formatLong(date)}</h2>
-        {isToday ? (
-          <small>{formatLong(date)}</small>
-        ) : (
-          <span className="badge">Solo lectura</span>
-        )}
-      </div>
+      {title}
 
       <div className="card summary">
         <div className="summary-main">
@@ -36,6 +53,12 @@ export default function DayView({ date, isToday, settings, onAdd, onOpenMeal }) 
         </p>
         <ProteinBar consumed={t.proteina_g} goal={settings.proteinGoal} />
       </div>
+
+      {isEmpty && (
+        <p className="hint center">
+          Aún no has apuntado nada hoy. Toca <strong>+ Añadir</strong> y haz una foto a tu comida.
+        </p>
+      )}
 
       {SLOTS.map((slot) => (
         <section key={slot} className="slot-group">

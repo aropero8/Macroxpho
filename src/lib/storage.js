@@ -184,8 +184,7 @@ export function exportBackup() {
   );
 }
 
-/** Sustituye todos los datos por los de la copia. Devuelve el número de días importados. */
-export function importBackup(text) {
+function parseBackup(text) {
   let parsed;
   try {
     parsed = JSON.parse(text);
@@ -195,6 +194,18 @@ export function importBackup(text) {
   if (parsed?.app !== "macrosnap" || typeof parsed.days !== "object" || !parsed.days) {
     throw new Error("El archivo no es una copia de MacroSnap.");
   }
+  return parsed;
+}
+
+/** Valida una copia sin importarla. Devuelve { days, exportedAt } para mostrarlo antes de confirmar. */
+export function inspectBackup(text) {
+  const parsed = parseBackup(text);
+  return { days: Object.keys(parsed.days).length, exportedAt: parsed.exportedAt ?? null };
+}
+
+/** Sustituye todos los datos por los de la copia. Devuelve el número de días importados. */
+export function importBackup(text) {
+  const parsed = parseBackup(text);
   const data = migrate({ version: parsed.version, days: parsed.days });
   persist(data);
   if (parsed.settings) saveSettings({ ...DEFAULT_SETTINGS, ...parsed.settings });

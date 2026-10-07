@@ -84,6 +84,7 @@ export default function App() {
           settings={settings}
           onAdd={(tipo) => child({ name: "addMeal", date: screen.date, tipo })}
           onOpenMeal={(meal) => child({ name: "meal", date: screen.date, mealId: meal.id })}
+          onOpenToday={() => openDay(today)}
         />
       );
       break;
@@ -146,7 +147,14 @@ export default function App() {
       break;
     default:
       content = (
-        <Home now={now} today={today} settings={settings} onOpenToday={() => openDay(today)} />
+        <Home
+          now={now}
+          today={today}
+          settings={settings}
+          hasApiKey={Boolean(apiKey)}
+          onOpenToday={() => openDay(today)}
+          onOpenSettings={() => child({ name: "settings" })}
+        />
       );
   }
 

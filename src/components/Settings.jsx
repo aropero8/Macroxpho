@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { dateKey } from "../lib/date.js";
-import { exportBackup, getSettings, importBackup } from "../lib/storage.js";
+import { exportBackup, getSettings, importBackup, inspectBackup } from "../lib/storage.js";
+import { useConfirm } from "./ConfirmDialog.jsx";
 
 export default function Settings({ apiKey, model, defaultModel, settings, onSave, onClose, onImported }) {
   const [key, setKey] = useState(apiKey);
@@ -10,6 +11,7 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const importRef = useRef(null);
+  const [confirm, dialog] = useConfirm();
 
   function save() {
     const proteinGoal = Math.round(Number(protein));
@@ -42,10 +44,20 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
     if (!file) return;
     setError("");
     setMessage("");
-    if (!window.confirm("La copia sustituirá todos los días guardados en este dispositivo. ¿Continuar?"))
-      return;
     try {
-      const n = importBackup(await file.text());
+      const text = await file.text();
+      const info = inspectBackup(text);
+      const when = info.exportedAt
+        ? ` del ${new Date(info.exportedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}`
+        : "";
+      const ok = await confirm({
+        title: "¿Importar la copia?",
+        message: `La copia${when} tiene ${info.days} ${info.days === 1 ? "día" : "días"}. Sustituirá todos los días y objetivos guardados en este dispositivo. Si tienes dudas, exporta antes una copia de lo actual.`,
+        confirmLabel: "Importar",
+        danger: true,
+      });
+      if (!ok) return;
+      const n = importBackup(text);
       const s = getSettings();
       setProtein(String(s.proteinGoal));
       setKcal(s.kcalGoal ? String(s.kcalGoal) : "");
@@ -148,6 +160,7 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
 
       {message && <div className="success">{message}</div>}
       {error && <div className="error">{error}</div>}
+      {dialog}
     </>
   );
 }
