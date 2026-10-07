@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useBackLayer } from "../lib/backButton.js";
 import { listDaysWithData } from "../lib/storage.js";
 import Calendar from "./Calendar.jsx";
 
@@ -6,6 +7,7 @@ import Calendar from "./Calendar.jsx";
 // al tocar fuera, con ✕ o con Escape.
 export default function SideMenu({ today, selected, onSelectDay, onToday, onReports, onClose }) {
   const panelRef = useRef(null);
+  useBackLayer(onClose); // Atrás de Android cierra el menú
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();

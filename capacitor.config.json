@@ -1,5 +1,13 @@
 {
   "appId": "com.alberto.macrosnap",
   "appName": "MacroSnap",
-  "webDir": "dist"
+  "webDir": "dist",
+  "backgroundColor": "#0f172a",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
 }

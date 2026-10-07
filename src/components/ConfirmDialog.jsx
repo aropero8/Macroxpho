@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useBackLayer } from "../lib/backButton.js";
 
 // Diálogo de confirmación propio (en vez de window.confirm, que en el WebView de
 // Android se ve como una alerta del sistema). En el móvil aparece como hoja inferior,
 // con los botones al alcance del pulgar.
 function ConfirmDialog({ title, message, confirmLabel = "Aceptar", danger, onConfirm, onCancel }) {
   const cancelRef = useRef(null);
+  useBackLayer(onCancel); // Atrás de Android = Cancelar
 
   useEffect(() => {
     cancelRef.current?.focus(); // la opción segura, por defecto

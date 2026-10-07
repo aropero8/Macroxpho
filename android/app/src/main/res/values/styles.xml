@@ -13,6 +13,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Fondo oscuro detrás de la web y de las barras del sistema (sin franjas claras) -->
+        <item name="android:windowBackground">@color/macrosnap_bg</item>
     </style>
 
 

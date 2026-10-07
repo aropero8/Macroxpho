@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores de MacroSnap (los mismos que --bg y --accent en src/App.css) -->
+    <color name="macrosnap_bg">#0F172A</color>
+    <color name="macrosnap_accent">#22C55E</color>
+    <color name="macrosnap_accent_light">#86EFAC</color>
+</resources>

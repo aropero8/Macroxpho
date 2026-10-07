@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { exitApp, useBackButton } from "./lib/backButton.js";
 import { dateKey } from "./lib/date.js";
 import { FALLBACK_MODEL, freeModelOr } from "./lib/models.js";
 import { currentPeriod } from "./lib/reports.js";
@@ -65,6 +66,10 @@ export default function App() {
     else if (screen.name === "addMeal" || screen.name === "meal") openDay(screen.date);
     else go({ name: "home" });
   }
+
+  // Atrás de Android: el menú y los diálogos se cierran solos (useBackLayer);
+  // si no hay ninguno abierto, vuelve a la pantalla anterior y solo sale desde Hoy.
+  useBackButton(() => (screen.name === "home" ? exitApp() : back()));
 
   function onSaveSettings({ apiKey: k, model: m, proteinGoal, kcalGoal }) {
     saveApiConfig({ apiKey: k, model: m });
