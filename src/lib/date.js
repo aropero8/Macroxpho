@@ -21,6 +21,12 @@ export function formatLong(key) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// "Octubre de 2026" (m empieza en 0, como en Date)
+export function formatMonth(y, m) {
+  const s = new Date(y, m, 1).toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 export function greeting(d = new Date()) {
   const h = d.getHours();
   if (h >= 6 && h < 12) return { hello: "Buenos días", question: "¿Qué te apetece comer hoy?" };

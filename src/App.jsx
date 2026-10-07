@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_MODEL } from "./lib/gemini.js";
 import { dateKey } from "./lib/date.js";
 import { getApiConfig, getSettings, saveApiConfig, saveSettings } from "./lib/storage.js";
@@ -7,6 +7,7 @@ import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
 import MealView from "./components/MealView.jsx";
 import Settings from "./components/Settings.jsx";
+import SideMenu from "./components/SideMenu.jsx";
 import "./App.css";
 
 // Navegación sin router: `screen` describe la pantalla actual.
@@ -39,8 +40,12 @@ export default function App() {
     };
   }, []);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
   function go(next) {
     setScreen(next);
+    setMenuOpen(false);
     window.scrollTo(0, 0);
   }
 
@@ -128,24 +133,44 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        {screen.name === "home" ? (
-          <span className="icon-spacer" />
-        ) : (
-          <button className="icon back" onClick={back} aria-label="Volver">
-            ‹
+        <div className="header-side">
+          <button
+            className="icon menu-btn"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Abrir menú"
+            aria-expanded={menuOpen}
+          >
+            ☰
           </button>
-        )}
+          {screen.name !== "home" && (
+            <button className="icon back" onClick={back} aria-label="Volver">
+              ‹
+            </button>
+          )}
+        </div>
         <h1>MacroSnap</h1>
-        <button
-          className="icon"
-          onClick={() => screen.name !== "settings" && go({ name: "settings", prev: screen })}
-          aria-label="Ajustes"
-        >
-          ⚙️
-        </button>
+        <div className="header-side right">
+          <button
+            className="icon"
+            onClick={() => screen.name !== "settings" && go({ name: "settings", prev: screen })}
+            aria-label="Ajustes"
+          >
+            ⚙️
+          </button>
+        </div>
       </header>
 
       {content}
+
+      {menuOpen && (
+        <SideMenu
+          today={today}
+          selected={screen.date}
+          onSelectDay={openDay}
+          onToday={() => openDay(today)}
+          onClose={closeMenu}
+        />
+      )}
     </div>
   );
 }
