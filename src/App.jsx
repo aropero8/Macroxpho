@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { DEFAULT_MODEL } from "./lib/gemini.js";
 import { dateKey } from "./lib/date.js";
+import { FALLBACK_MODEL, freeModelOr } from "./lib/models.js";
 import { currentPeriod } from "./lib/reports.js";
 import { getApiConfig, getSettings, saveApiConfig, saveSettings } from "./lib/storage.js";
 import AddMeal from "./components/AddMeal.jsx";
@@ -25,7 +25,8 @@ export default function App() {
   const [apiKey, setApiKey] = useState(
     () => getApiConfig().apiKey || import.meta.env.VITE_GEMINI_API_KEY || ""
   );
-  const [model, setModel] = useState(() => getApiConfig().model || DEFAULT_MODEL);
+  // Solo se usan modelos gratuitos: si el guardado no lo es, se usa el de por defecto.
+  const [model, setModel] = useState(() => freeModelOr(getApiConfig().model));
   const [settings, setSettings] = useState(getSettings);
   const [screen, setScreen] = useState({ name: "home" });
   const [now, setNow] = useState(() => new Date());
@@ -137,7 +138,7 @@ export default function App() {
         <Settings
           apiKey={apiKey}
           model={model}
-          defaultModel={DEFAULT_MODEL}
+          defaultModel={FALLBACK_MODEL}
           settings={settings}
           onSave={onSaveSettings}
           onClose={back}

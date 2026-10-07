@@ -1,6 +1,13 @@
 import { useRef, useState } from "react";
 import { dateKey } from "../lib/date.js";
-import { exportBackup, getSettings, importBackup, inspectBackup } from "../lib/storage.js";
+import { FREE_MODELS, isFreeModel } from "../lib/models.js";
+import {
+  exportBackup,
+  getApiConfig,
+  getSettings,
+  importBackup,
+  inspectBackup,
+} from "../lib/storage.js";
 import { useConfirm } from "./ConfirmDialog.jsx";
 
 export default function Settings({ apiKey, model, defaultModel, settings, onSave, onClose, onImported }) {
@@ -12,6 +19,11 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
   const [message, setMessage] = useState("");
   const importRef = useRef(null);
   const [confirm, dialog] = useConfirm();
+  // Modelo guardado antes de existir el desplegable que no es gratuito (se avisa y se sustituye).
+  const [replacedModel] = useState(() => {
+    const stored = getApiConfig().model;
+    return stored && !isFreeModel(stored) ? stored : null;
+  });
 
   function save() {
     const proteinGoal = Math.round(Number(protein));
@@ -20,7 +32,7 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
     if (kcalGoal !== null && !(kcalGoal > 0))
       return setError("El objetivo de kcal debe ser un número mayor que 0, o dejarlo vacío.");
     try {
-      onSave({ apiKey: key.trim(), model: mdl.trim() || defaultModel, proteinGoal, kcalGoal });
+      onSave({ apiKey: key.trim(), model: mdl, proteinGoal, kcalGoal });
     } catch {
       setError("No se pudieron guardar los ajustes.");
     }
@@ -115,15 +127,29 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
         </label>
 
         <label className="field">
-          <span>Modelo</span>
-          <input
-            type="text"
-            value={mdl}
-            onChange={(e) => setMdl(e.target.value)}
-            placeholder={defaultModel}
-            autoCapitalize="off"
-          />
-          <small>Usa un modelo Flash / Flash-Lite para la capa gratuita.</small>
+          <span>Modelo (solo gratuitos)</span>
+          <select value={mdl} onChange={(e) => setMdl(e.target.value)}>
+            {FREE_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+                {m.id === defaultModel ? " · por defecto" : ""}
+              </option>
+            ))}
+          </select>
+          <small>
+            {FREE_MODELS.find((m) => m.id === mdl)?.note} Todos tienen capa gratuita y aceptan
+            fotos.{" "}
+            <a href="https://aistudio.google.com/rate-limit" target="_blank" rel="noreferrer">
+              Ver tus límites
+            </a>
+            .
+          </small>
+          {replacedModel && (
+            <small className="warn">
+              Tenías guardado «{replacedModel}», que no está en la lista de gratuitos. Al guardar
+              se cambiará por el elegido aquí.
+            </small>
+          )}
         </label>
 
         <div className="row">

@@ -46,8 +46,9 @@ Todo se queda en el dispositivo; a Google solo se envían la foto (reducida a 10
 
 ## Modelo y capa gratuita
 
-- El modelo por defecto es `gemini-3.5-flash` (estable, con capa gratuita y sin fecha de retirada anunciada a octubre de 2026). Se puede cambiar en Ajustes o con `VITE_GEMINI_MODEL`; el Flash más reciente es `gemini-3.8-flash`. Si ves "No se encuentra el modelo", consulta la lista actual en https://ai.google.dev/gemini-api/docs/models.
-- Los modelos 2.5 no tienen fecha de retirada, pero Google limita el acceso a quien ya los usaba y recomienda los 3.x para proyectos nuevos (https://ai.google.dev/gemini-api/docs/deprecations).
+- En Ajustes hay un desplegable que **solo muestra modelos con capa gratuita** que aceptan fotos: `gemini-3.8-flash` (el más reciente), `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash` (por defecto), `gemini-3.5-flash-lite` y `gemini-3.1-flash-lite` (Google lo retira el 7 de mayo de 2027). La lista está en `src/lib/models.js` y se revisó en octubre de 2026 con https://ai.google.dev/gemini-api/docs/pricing; si Google la cambia, basta con editar ese archivo.
+- Si hay guardado un modelo que no está en la lista, o `VITE_GEMINI_MODEL` apunta a uno de pago, la app usa el de por defecto.
+- Fuera de la lista quedan los 2.5 (no tienen fecha de retirada, pero Google limita el acceso a quien ya los usaba: https://ai.google.dev/gemini-api/docs/deprecations), los preview y los modelos de voz, imagen o embeddings.
 - Los límites de tu cuenta están en https://aistudio.google.com/rate-limit. En la capa gratuita Google puede usar los datos enviados para mejorar sus modelos y no está pensada para uso comercial.
 
 ## Empaquetar como app Android (Capacitor)
@@ -97,6 +98,7 @@ src/
     Thumb.jsx                miniatura desde IndexedDB
   lib/
     gemini.js                cliente REST de Gemini + esquema JSON
+    models.js                lista de modelos gratuitos para el desplegable
     image.js                 redimensionado de la foto y miniaturas
     storage.js               acceso a datos (localStorage) y copia de seguridad
     thumbs.js                miniaturas en IndexedDB
