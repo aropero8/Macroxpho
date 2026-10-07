@@ -20,5 +20,8 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <!-- Android 12+: pantalla de inicio del sistema con los colores de MacroSnap -->
+        <item name="windowSplashScreenBackground">@color/macrosnap_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_macrosnap_foreground</item>
     </style>
 </resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pantalla de inicio (Android 7 a 11): fondo de MacroSnap con el icono centrado.
+     En Android 12+ la dibuja el sistema con windowSplashScreen* (ver styles.xml). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/macrosnap_bg" />
+    <item
+        android:width="200dp"
+        android:height="200dp"
+        android:drawable="@drawable/ic_macrosnap_foreground"
+        android:gravity="center" />
+</layer-list>

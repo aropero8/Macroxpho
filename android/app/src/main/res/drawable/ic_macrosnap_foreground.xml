@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Icono de MacroSnap: una cámara verde (el "snap") sobre el fondo azul oscuro de la app.
+  Lienzo de 108x108 de los iconos adaptativos; el dibujo cabe en la zona segura central
+  (círculo de 66 de diámetro), así que no se recorta con ninguna forma de icono.
+  El objetivo es un hueco (evenOdd), por eso también sirve como icono monocromo (Android 13+).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Visor -->
+    <path
+        android:fillColor="@color/macrosnap_accent"
+        android:pathData="M47,35H57A3,3 0 0 1 60,38V45H44V38A3,3 0 0 1 47,35Z" />
+    <!-- Cuerpo con el hueco del objetivo -->
+    <path
+        android:fillColor="@color/macrosnap_accent"
+        android:fillType="evenOdd"
+        android:pathData="M37,41H71A7,7 0 0 1 78,48V66A7,7 0 0 1 71,73H37A7,7 0 0 1 30,66V48A7,7 0 0 1 37,41Z M54,46A11,11 0 1 0 54,68A11,11 0 1 0 54,46Z" />
+    <!-- Lente -->
+    <path
+        android:fillColor="@color/macrosnap_accent_light"
+        android:pathData="M54,51.5A5.5,5.5 0 1 0 54,62.5A5.5,5.5 0 1 0 54,51.5Z" />
+</vector>
