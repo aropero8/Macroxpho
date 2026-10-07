@@ -11,6 +11,32 @@ export function parseKey(key) {
   return new Date(y, m - 1, d);
 }
 
+export function addDays(key, n) {
+  const d = parseKey(key);
+  return dateKey(new Date(d.getFullYear(), d.getMonth(), d.getDate() + n));
+}
+
+// Lunes de la semana de `key` (semana de lunes a domingo).
+export function weekStart(key) {
+  return addDays(key, -((parseKey(key).getDay() + 6) % 7));
+}
+
+export function monthStart(key) {
+  return `${key.slice(0, 8)}01`;
+}
+
+// "29 sept – 5 oct 2026" o "5 – 11 oct 2026"
+export function formatRange(from, to) {
+  const a = parseKey(from);
+  const b = parseKey(to);
+  const left =
+    a.getMonth() === b.getMonth()
+      ? a.getDate()
+      : a.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  const right = b.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
+  return `${left} – ${right}`;
+}
+
 // "Lunes, 6 de octubre"
 export function formatLong(key) {
   const s = parseKey(key).toLocaleDateString("es-ES", {

@@ -6,6 +6,9 @@
   --muted: #94a3b8;
   --accent: #22c55e;
   --danger: #ef4444;
+  /* Series de los gráficos, validadas (luminosidad, daltonismo y contraste) sobre --card */
+  --series-kcal: #3987e5;
+  --series-protein: #199e70;
   color-scheme: dark;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -692,4 +695,247 @@ button.link {
 .menu-link:disabled {
   color: var(--muted);
   cursor: default;
+}
+
+/* ---------- Informes ---------- */
+
+.segmented {
+  display: flex;
+  padding: 4px;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.segmented button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.period-nav .icon {
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.empty-state {
+  align-items: center;
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 16px;
+}
+
+.empty-state > span {
+  font-size: 2rem;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.stat strong {
+  font-size: 1.5rem;
+}
+
+.stat small {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chart-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.chart-key {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.chart-body {
+  position: relative;
+}
+
+.chart-body svg {
+  display: block;
+  overflow: visible;
+}
+
+.chart .grid,
+.chart .axis {
+  stroke: var(--border);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.chart .axis {
+  stroke: #475569;
+}
+
+/* La línea del objetivo es un umbral, no una rejilla: discontinua y más clara */
+.chart .goal-line {
+  stroke: var(--text);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.chart .tick {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart .tick.faint {
+  opacity: 0.5;
+}
+
+.chart .bar {
+  pointer-events: none;
+  transition: filter 0.15s ease;
+}
+
+.chart .bar.active {
+  filter: brightness(1.3);
+}
+
+.chart .hit {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.chart .hit:focus-visible {
+  fill: rgba(148, 163, 184, 0.12);
+}
+
+.chart-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  font-size: 0.8rem;
+  color: var(--muted);
+  pointer-events: auto;
+}
+
+.chart-tip strong {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.chart-tip .link {
+  align-self: flex-start;
+  margin-top: 2px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.table-view summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.table-view table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-view th,
+.table-view td {
+  padding: 8px 4px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+.table-view th[scope="row"],
+.table-view thead th:first-child {
+  text-align: left;
+  font-weight: 400;
+}
+
+.table-view thead th {
+  color: var(--muted);
+  font-weight: 400;
+  border-top: none;
+}
+
+.table-view .link {
+  text-decoration: none;
+  text-align: left;
+}
+
+.table-view tr.no-data td {
+  color: var(--muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

@@ -48,8 +48,8 @@ export default function SideMenu({ today, selected, onSelectDay, onToday, onRepo
           <button className="menu-link" onClick={onToday}>
             📅 Hoy
           </button>
-          <button className="menu-link" onClick={onReports} disabled={!onReports}>
-            📊 Informes {!onReports && <small>(próximamente)</small>}
+          <button className="menu-link" onClick={onReports}>
+            📊 Informes
           </button>
         </div>
       </nav>

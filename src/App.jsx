@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_MODEL } from "./lib/gemini.js";
 import { dateKey } from "./lib/date.js";
+import { currentPeriod } from "./lib/reports.js";
 import { getApiConfig, getSettings, saveApiConfig, saveSettings } from "./lib/storage.js";
 import AddMeal from "./components/AddMeal.jsx";
 import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
 import MealView from "./components/MealView.jsx";
+import Reports from "./components/Reports.jsx";
 import Settings from "./components/Settings.jsx";
 import SideMenu from "./components/SideMenu.jsx";
 import "./App.css";
@@ -15,7 +17,10 @@ import "./App.css";
 //   { name: "day", date }
 //   { name: "addMeal", date, tipo }
 //   { name: "meal", date, mealId }
-//   { name: "settings", prev }
+//   { name: "settings" }
+//   { name: "reports", mode: "week" | "month", anchor }
+// Cualquiera puede llevar `parent`: la pantalla a la que vuelve "‹"
+// (por ejemplo, un día abierto desde un informe vuelve a ese informe).
 export default function App() {
   const [apiKey, setApiKey] = useState(
     () => getApiConfig().apiKey || import.meta.env.VITE_GEMINI_API_KEY || ""
@@ -50,10 +55,13 @@ export default function App() {
   }
 
   const openDay = (date) => go({ name: "day", date });
+  const child = (next) => go({ ...next, parent: screen });
+  const openReports = () =>
+    go({ name: "reports", mode: "week", anchor: currentPeriod("week", today) });
 
   function back() {
-    if (screen.name === "addMeal" || screen.name === "meal") openDay(screen.date);
-    else if (screen.name === "settings") go(screen.prev);
+    if (screen.parent) go(screen.parent);
+    else if (screen.name === "addMeal" || screen.name === "meal") openDay(screen.date);
     else go({ name: "home" });
   }
 
@@ -74,8 +82,8 @@ export default function App() {
           date={screen.date}
           isToday={screen.date === today}
           settings={settings}
-          onAdd={(tipo) => go({ name: "addMeal", date: screen.date, tipo })}
-          onOpenMeal={(meal) => go({ name: "meal", date: screen.date, mealId: meal.id })}
+          onAdd={(tipo) => child({ name: "addMeal", date: screen.date, tipo })}
+          onOpenMeal={(meal) => child({ name: "meal", date: screen.date, mealId: meal.id })}
         />
       );
       break;
@@ -88,13 +96,13 @@ export default function App() {
             tipo={screen.tipo}
             apiKey={apiKey}
             model={model}
-            onSaved={() => openDay(screen.date)}
-            onOpenSettings={() => go({ name: "settings", prev: screen })}
+            onSaved={back}
+            onOpenSettings={() => child({ name: "settings" })}
           />
         ) : (
           <div className="card">
             <p>Ya no es hoy: los días pasados no se pueden editar.</p>
-            <button className="btn" onClick={() => openDay(screen.date)}>
+            <button className="btn" onClick={back}>
               Volver al día
             </button>
           </div>
@@ -107,7 +115,19 @@ export default function App() {
           date={screen.date}
           mealId={screen.mealId}
           readOnly={screen.date !== today}
-          onDone={() => openDay(screen.date)}
+          onDone={back}
+        />
+      );
+      break;
+    case "reports":
+      content = (
+        <Reports
+          today={today}
+          settings={settings}
+          mode={screen.mode}
+          anchor={screen.anchor}
+          onChange={(mode, anchor) => setScreen({ ...screen, mode, anchor })}
+          onOpenDay={(date) => child({ name: "day", date })}
         />
       );
       break;
@@ -152,7 +172,7 @@ export default function App() {
         <div className="header-side right">
           <button
             className="icon"
-            onClick={() => screen.name !== "settings" && go({ name: "settings", prev: screen })}
+            onClick={() => screen.name !== "settings" && child({ name: "settings" })}
             aria-label="Ajustes"
           >
             ⚙️
@@ -168,6 +188,7 @@ export default function App() {
           selected={screen.date}
           onSelectDay={openDay}
           onToday={() => openDay(today)}
+          onReports={openReports}
           onClose={closeMenu}
         />
       )}
