@@ -9,6 +9,7 @@ const DATA_KEY = "macrosnap.data";
 const SETTINGS_KEY = "macrosnap.settings";
 const API_KEY_KEY = "macrosnap.apiKey";
 const MODEL_KEY = "macrosnap.model";
+const CELEBRATED_KEY = "macrosnap.celebrated"; // último día en que se celebró el objetivo
 
 export const DATA_VERSION = 1;
 export const SLOTS = ["desayuno", "comida", "cena"];
@@ -177,6 +178,21 @@ export function getApiConfig() {
 export function saveApiConfig({ apiKey, model }) {
   localStorage.setItem(API_KEY_KEY, apiKey);
   localStorage.setItem(MODEL_KEY, model);
+}
+
+/* ---------- Celebración del objetivo ---------- */
+
+// Solo hace falta recordar el último día: la celebración solo se muestra en el día de hoy.
+export function wasGoalCelebrated(key) {
+  return readItem(CELEBRATED_KEY) === key;
+}
+
+export function markGoalCelebrated(key) {
+  try {
+    localStorage.setItem(CELEBRATED_KEY, key);
+  } catch {
+    // Sin almacenamiento, como mucho se repetiría la celebración.
+  }
 }
 
 /* ---------- Copia de seguridad ---------- */

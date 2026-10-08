@@ -3,13 +3,17 @@ import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
 import { getDay, MEAL_LABELS, SLOTS } from "../lib/storage.js";
 import Icon from "./Icon.jsx";
 import MealSlot from "./MealSlot.jsx";
-import ProteinBar from "./ProteinBar.jsx";
+import ProteinRing, { GoalMessage, useGoalCelebration } from "./ProteinRing.jsx";
 
 export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, onOpenToday }) {
   const day = getDay(date);
   const readOnly = !isToday;
   const isEmpty = mealsOf(day).length === 0;
   const t = dayTotals(day);
+  const goal = settings.proteinGoal;
+  const reached = goal > 0 && round(t.proteina_g) >= goal;
+  // Solo hoy se celebra; los días pasados muestran el estado final sin animación.
+  const celebration = useGoalCelebration(date, reached, isToday);
 
   const title = (
     <div className="day-title">
@@ -44,28 +48,37 @@ export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, on
       {title}
 
       <div className="card summary">
-        <div className="summary-main">
+        <ProteinRing
+          date={date}
+          consumed={t.proteina_g}
+          goal={goal}
+          animate={isToday}
+          celebrating={celebration.active}
+          onSettled={celebration.start}
+        />
+        {reached && !celebration.pending && (
+          <GoalMessage consumed={t.proteina_g} goal={goal} celebrating={celebration.active} />
+        )}
+        <div className="summary-row">
           <div className="metric">
             <strong className="num">{round(t.kcal).toLocaleString("es-ES")}</strong>
             <span className="label">kcal{settings.kcalGoal ? ` de ${settings.kcalGoal}` : ""}</span>
           </div>
           <div className="metric">
             <strong className="num">
-              {round(t.proteina_g)}
+              {round(t.carbohidratos_g)}
               <small>g</small>
             </strong>
-            <span className="label">proteína</span>
+            <span className="label">Carbohidratos</span>
+          </div>
+          <div className="metric">
+            <strong className="num">
+              {round(t.grasas_g)}
+              <small>g</small>
+            </strong>
+            <span className="label">Grasas</span>
           </div>
         </div>
-        <p className="summary-minor">
-          <span>
-            <span className="label">Carbohidratos</span> {round(t.carbohidratos_g)} g
-          </span>
-          <span>
-            <span className="label">Grasas</span> {round(t.grasas_g)} g
-          </span>
-        </p>
-        <ProteinBar consumed={t.proteina_g} goal={settings.proteinGoal} />
       </div>
 
       {isEmpty && (

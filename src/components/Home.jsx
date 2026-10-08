@@ -3,6 +3,7 @@ import { formatLong, greeting } from "../lib/date.js";
 import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
 import { getDay, MEAL_LABELS, SLOTS, suggestSlot } from "../lib/storage.js";
 import Icon from "./Icon.jsx";
+import ProteinRing, { useGoalCelebration } from "./ProteinRing.jsx";
 
 const TARGETS = [...SLOTS, "snack"];
 
@@ -14,7 +15,14 @@ export default function Home({ now, today, settings, hasApiKey, onOpenToday, onA
   const protein = round(t.proteina_g);
   const goal = settings.proteinGoal;
   const left = goal - protein;
-  const pct = goal > 0 ? Math.min(1, protein / goal) * 100 : 0;
+  const reached = goal > 0 && left <= 0;
+  const celebration = useGoalCelebration(today, reached, true);
+
+  let note = "Aún no has apuntado nada hoy";
+  // Mientras el anillo se llena, la línea queda reservada (sin saltos) y el mensaje
+  // aparece con la celebración.
+  if (reached) note = celebration.pending ? "\u00a0" : "¡Objetivo de proteína conseguido!\u00a0💪";
+  else if (count > 0) note = `Quedan ${left} g de proteína`;
 
   // El hueco propuesto se puede cambiar; los huecos ya ocupados no se ofrecen.
   const [picked, setPicked] = useState(null);
@@ -40,28 +48,27 @@ export default function Home({ now, today, settings, hasApiKey, onOpenToday, onA
             <Icon name="next" />
           </span>
         </span>
-        <span className="today-stats">
-          <span className="metric">
-            <strong className="num">{round(t.kcal).toLocaleString("es-ES")}</strong>
-            <span className="label">kcal{settings.kcalGoal ? ` de ${settings.kcalGoal}` : ""}</span>
+        <span className="today-body">
+          <ProteinRing
+            size="sm"
+            date={today}
+            consumed={t.proteina_g}
+            goal={goal}
+            celebrating={celebration.active}
+            onSettled={celebration.start}
+          />
+          <span className="today-side">
+            <span className="metric">
+              <strong className="num">{round(t.kcal).toLocaleString("es-ES")}</strong>
+              <span className="label">kcal{settings.kcalGoal ? ` de ${settings.kcalGoal}` : ""}</span>
+            </span>
+            <span
+              className={`today-note${reached ? " done" : ""}${celebration.active ? " celebrate" : ""}`}
+            >
+              {note}
+              {reached && !celebration.pending && left < 0 && <small>+{-left} g sobre el objetivo</small>}
+            </span>
           </span>
-          <span className="metric">
-            <strong className="num">
-              {protein}
-              <small>g</small>
-            </strong>
-            <span className="label">proteína de {goal} g</span>
-          </span>
-        </span>
-        <span className="mini-track" aria-hidden="true">
-          <span className="mini-fill" style={{ width: `${pct}%` }} />
-        </span>
-        <span className={left <= 0 ? "today-note done" : "today-note"}>
-          {left <= 0
-            ? "Objetivo de proteína conseguido"
-            : count === 0
-              ? "Aún no has apuntado nada hoy"
-              : `Quedan ${left} g de proteína`}
         </span>
       </button>
 

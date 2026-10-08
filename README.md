@@ -14,7 +14,8 @@ Haces una foto (o eliges una de la galería), Gemini identifica los platos y est
 ## Qué hace
 
 - **Inicio**: un saludo según la hora, el resumen de hoy (kcal y proteína frente al objetivo) y el botón **Añadir comida**, que propone el hueco según la hora (desayuno, comida, cena o snack) y deja cambiarlo.
-- **Día**: kcal y proteína en grande (carbohidratos y grasas en pequeño) y una barra de proteína frente a tu objetivo ("Quedan 34 g de 144 g" o "+12 g sobre el objetivo"). Debajo, Desayuno, Comida, Cena y una lista de snacks.
+- **Día**: un anillo de proteína que se llena según comes, con los gramos en el centro y "Quedan 34 g de 144 g" debajo; es neutro al principio, verde al acercarte (desde el 60 %) y dorado al llegar. Debajo, kcal, carbohidratos y grasas, y los huecos de Desayuno, Comida, Cena y snacks.
+- **Objetivo conseguido**: al llegar a tu objetivo de proteína aparece "¡Objetivo de proteína conseguido! 💪" (con "+12 g" si te pasas). La primera vez de cada día lo acompañan una pequeña animación y una vibración corta; el mensaje se queda el resto del día. Los días pasados muestran solo el estado final, sin animación.
 - **Añadir comida**: haces una foto o eliges una de la galería, puedes añadir una nota ("200 g de arroz"), Gemini estima los platos y sus macros, corriges los gramos si hace falta y la guardas en su hueco con una miniatura.
 - **Corregir o borrar**: el día de hoy puedes abrir una comida para ajustar gramos o borrarla. Los días pasados son de solo lectura.
 - **Calendario** (menú ☰): marca los días con comidas y permite abrir cualquier día pasado.
@@ -88,6 +89,7 @@ Para depurar la parte web dentro del móvil, abre `chrome://inspect` en Chrome d
 ### Qué incluye la parte Android
 
 - **Cámara:** el botón "Cámara" usa `<input type="file" capture>`, que Capacitor convierte en una llamada a la app de cámara del sistema. El manifiesto declara `<queries>` para `IMAGE_CAPTURE`; sin eso, desde Android 11 se abriría la galería en vez de la cámara. No hace falta el permiso `CAMERA`, porque la foto la hace la app de cámara.
+- **Vibración** (`@capacitor/haptics`): una vibración corta la primera vez del día que alcanzas el objetivo de proteína. El plugin declara él mismo el permiso `VIBRATE`.
 - **Botón Atrás** (`@capacitor/app`): cierra el diálogo o el menú si hay uno abierto, si no vuelve a la pantalla anterior, y solo sale de la app desde la pantalla de inicio.
 - **Barra de estado y zonas seguras:** en `capacitor.config.json`, `SystemBars` pone iconos claros sobre el fondo oscuro y hace que `env(safe-area-inset-*)` del CSS funcione con el notch y la barra de navegación. `backgroundColor` evita el destello blanco al abrir.
 - **Icono y pantalla de inicio:** el icono es un vector (`android/app/src/main/res/drawable/ic_macrosnap_foreground.xml`) y los colores están en `res/values/colors.xml`. Los PNG de `mipmap-*` son solo para Android 7 y salen del mismo diseño.
@@ -101,6 +103,7 @@ Todo se queda en el dispositivo; a Google solo se envían la foto y la nota cuan
 |-----|-------|
 | Días y comidas | `localStorage` → `macrosnap.data`, con un campo `version` para futuras migraciones |
 | Objetivos | `localStorage` → `macrosnap.settings` |
+| Último día en que se celebró el objetivo | `localStorage` → `macrosnap.celebrated` |
 | API key y modelo | `localStorage` → `macrosnap.apiKey` y `macrosnap.model` |
 | Miniaturas | IndexedDB → base `macrosnap`, almacén `thumbs` (JPEG de 200 px, calidad 0.6). Si IndexedDB falla, la app sigue funcionando sin miniaturas. |
 
@@ -136,9 +139,9 @@ src/
   components/
     Home.jsx                 pantalla de inicio (resumen de hoy y Añadir comida)
     Icon.jsx                 iconos SVG de trazo
-    DayView.jsx              día: resumen, barra de proteína, huecos y snacks
+    DayView.jsx              día: anillo de proteína, resumen, huecos y snacks
     MealSlot.jsx             hueco de una comida (vacío o con miniatura)
-    ProteinBar.jsx           barra de proteína
+    ProteinRing.jsx          anillo de proteína, mensaje y celebración del objetivo
     AddMeal.jsx              analizador de fotos + guardar en el hueco
     MealView.jsx             detalle de una comida (corregir o borrar)
     Results.jsx              platos, totales y edición de gramos
@@ -159,6 +162,7 @@ src/
     reports.js               cálculos de los informes
     date.js                  fechas en hora local
     backButton.js            botón Atrás de Android (@capacitor/app)
+    haptics.js               vibración al conseguir el objetivo (@capacitor/haptics)
     devSample.js             comida de prueba (solo desarrollo)
 android/                     proyecto Android generado por Capacitor
   app/src/main/AndroidManifest.xml     permisos y <queries> de la cámara
