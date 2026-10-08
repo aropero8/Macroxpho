@@ -1,32 +1,69 @@
+import { useState } from "react";
 import { formatLong, greeting } from "../lib/date.js";
 import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
-import { getDay } from "../lib/storage.js";
+import { getDay, MEAL_LABELS, SLOTS, suggestSlot } from "../lib/storage.js";
+import Icon from "./Icon.jsx";
 
-export default function Home({ now, today, settings, hasApiKey, onOpenToday, onOpenSettings }) {
+const TARGETS = [...SLOTS, "snack"];
+
+export default function Home({ now, today, settings, hasApiKey, onOpenToday, onAddMeal, onOpenSettings }) {
   const { hello, question } = greeting(now);
   const day = getDay(today);
   const t = dayTotals(day);
+  const count = mealsOf(day).length;
+  const protein = round(t.proteina_g);
+  const goal = settings.proteinGoal;
+  const left = goal - protein;
+  const pct = goal > 0 ? Math.min(1, protein / goal) * 100 : 0;
+
+  // El hueco propuesto se puede cambiar; los huecos ya ocupados no se ofrecen.
+  const [picked, setPicked] = useState(null);
+  const target = picked && !(picked !== "snack" && day[picked]) ? picked : suggestSlot(now, day);
 
   return (
     <div className="home">
       <div className="greeting">
-        <p>{hello}</p>
-        <h2>{question}</h2>
+        <p className="label">{formatLong(today)}</p>
+        <h2 className="display">{hello}</h2>
+        <p className="greeting-question">{question}</p>
       </div>
 
-      <button className="btn primary big" onClick={onOpenToday}>
-        Abrir el día de hoy
-        <small>{formatLong(today)}</small>
+      <button
+        className="card today-card"
+        onClick={onOpenToday}
+        aria-label={`Ver el día de hoy: ${round(t.kcal)} kcal y ${protein} de ${goal} g de proteína`}
+      >
+        <span className="today-head">
+          <span className="label">Hoy</span>
+          <span className="today-link">
+            Ver el día
+            <Icon name="next" />
+          </span>
+        </span>
+        <span className="today-stats">
+          <span className="metric">
+            <strong className="num">{round(t.kcal).toLocaleString("es-ES")}</strong>
+            <span className="label">kcal{settings.kcalGoal ? ` de ${settings.kcalGoal}` : ""}</span>
+          </span>
+          <span className="metric">
+            <strong className="num">
+              {protein}
+              <small>g</small>
+            </strong>
+            <span className="label">proteína de {goal} g</span>
+          </span>
+        </span>
+        <span className="mini-track" aria-hidden="true">
+          <span className="mini-fill" style={{ width: `${pct}%` }} />
+        </span>
+        <span className={left <= 0 ? "today-note done" : "today-note"}>
+          {left <= 0
+            ? "Objetivo de proteína conseguido"
+            : count === 0
+              ? "Aún no has apuntado nada hoy"
+              : `Quedan ${left} g de proteína`}
+        </span>
       </button>
-
-      {mealsOf(day).length > 0 ? (
-        <p className="hint center">
-          Hoy llevas {round(t.kcal)} kcal y {round(t.proteina_g)} g de proteína de{" "}
-          {settings.proteinGoal} g.
-        </p>
-      ) : (
-        <p className="hint center">Aún no has apuntado nada hoy.</p>
-      )}
 
       {!hasApiKey && (
         <div className="card notice">
@@ -40,6 +77,34 @@ export default function Home({ now, today, settings, hasApiKey, onOpenToday, onO
           </button>
         </div>
       )}
+
+      <div className="home-cta">
+        <p className="label" id="target-label">
+          Guardar en
+        </p>
+        <div className="chips" role="radiogroup" aria-labelledby="target-label">
+          {TARGETS.map((slot) => {
+            const taken = slot !== "snack" && Boolean(day[slot]);
+            return (
+              <button
+                key={slot}
+                className="chip"
+                role="radio"
+                aria-checked={target === slot}
+                disabled={taken}
+                onClick={() => setPicked(slot)}
+              >
+                {MEAL_LABELS[slot]}
+                {taken && <span className="sr-only"> (ya registrada)</span>}
+              </button>
+            );
+          })}
+        </div>
+        <button className="btn primary xl" onClick={() => onAddMeal(target)}>
+          <Icon name="plus" />
+          Añadir comida
+        </button>
+      </div>
     </div>
   );
 }

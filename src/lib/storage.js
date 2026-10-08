@@ -20,6 +20,19 @@ export const MEAL_LABELS = {
 };
 export const DEFAULT_SETTINGS = { proteinGoal: 144, kcalGoal: null };
 
+/**
+ * Hueco que toca según la hora (horario español). Si ese hueco ya tiene comida,
+ * propone snack: guardar en un hueco ocupado sustituiría lo que hay.
+ */
+export function suggestSlot(date, day) {
+  const h = date.getHours() + date.getMinutes() / 60;
+  let slot = "snack";
+  if (h >= 5 && h < 11.5) slot = "desayuno";
+  else if (h >= 13 && h < 17) slot = "comida";
+  else if (h >= 20) slot = "cena";
+  return slot !== "snack" && day[slot] ? "snack" : slot;
+}
+
 let cache = null;
 
 function readItem(key) {

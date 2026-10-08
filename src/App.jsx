@@ -7,6 +7,7 @@ import { getApiConfig, getSettings, saveApiConfig, saveSettings } from "./lib/st
 import AddMeal from "./components/AddMeal.jsx";
 import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
+import Icon from "./components/Icon.jsx";
 import MealView from "./components/MealView.jsx";
 import Reports from "./components/Reports.jsx";
 import Settings from "./components/Settings.jsx";
@@ -30,6 +31,8 @@ export default function App() {
   const [model, setModel] = useState(() => freeModelOr(getApiConfig().model));
   const [settings, setSettings] = useState(getSettings);
   const [screen, setScreen] = useState({ name: "home" });
+  // Sentido de la última navegación, para la transición: "forward", "back" o "none".
+  const [navDir, setNavDir] = useState("none");
   const [now, setNow] = useState(() => new Date());
   const today = dateKey(now);
 
@@ -50,21 +53,22 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
-  function go(next) {
+  function go(next, dir = "none") {
     setScreen(next);
+    setNavDir(dir);
     setMenuOpen(false);
     window.scrollTo(0, 0);
   }
 
   const openDay = (date) => go({ name: "day", date });
-  const child = (next) => go({ ...next, parent: screen });
+  const child = (next) => go({ ...next, parent: screen }, "forward");
   const openReports = () =>
     go({ name: "reports", mode: "week", anchor: currentPeriod("week", today) });
 
   function back() {
-    if (screen.parent) go(screen.parent);
-    else if (screen.name === "addMeal" || screen.name === "meal") openDay(screen.date);
-    else go({ name: "home" });
+    if (screen.parent) go(screen.parent, "back");
+    else if (screen.name === "addMeal" || screen.name === "meal") go({ name: "day", date: screen.date }, "back");
+    else go({ name: "home" }, "back");
   }
 
   // Atrás de Android: el menú y los diálogos se cierran solos (useBackLayer);
@@ -158,43 +162,53 @@ export default function App() {
           today={today}
           settings={settings}
           hasApiKey={Boolean(apiKey)}
-          onOpenToday={() => openDay(today)}
+          onOpenToday={() => child({ name: "day", date: today })}
+          onAddMeal={(tipo) => child({ name: "addMeal", date: today, tipo })}
           onOpenSettings={() => child({ name: "settings" })}
         />
       );
   }
+
+  // Cambiar de pantalla monta un <main> nuevo y lanza su animación de entrada. Cambiar
+  // de periodo en Informes no cuenta como pantalla nueva.
+  const screenKey = [screen.name, screen.date, screen.tipo, screen.mealId].join("|");
 
   return (
     <div className="app">
       <header>
         <div className="header-side">
           <button
-            className="icon menu-btn"
+            className="icon"
             onClick={() => setMenuOpen(true)}
             aria-label="Abrir menú"
             aria-expanded={menuOpen}
           >
-            ☰
+            <Icon name="menu" />
           </button>
           {screen.name !== "home" && (
-            <button className="icon back" onClick={back} aria-label="Volver">
-              ‹
+            <button className="icon" onClick={back} aria-label="Volver">
+              <Icon name="back" />
             </button>
           )}
         </div>
-        <h1>MacroSnap</h1>
+        <h1 className="wordmark">
+          Macro<span>Snap</span>
+        </h1>
         <div className="header-side right">
           <button
             className="icon"
             onClick={() => screen.name !== "settings" && child({ name: "settings" })}
             aria-label="Ajustes"
+            aria-current={screen.name === "settings" ? "page" : undefined}
           >
-            ⚙️
+            <Icon name="settings" />
           </button>
         </div>
       </header>
 
-      {content}
+      <main key={screenKey} className={`screen enter-${navDir}`}>
+        {content}
+      </main>
 
       {menuOpen && (
         <SideMenu

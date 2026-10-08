@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { dateKey, formatLong, formatMonth, parseKey } from "../lib/date.js";
+import Icon from "./Icon.jsx";
 
 const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
 
@@ -30,7 +31,7 @@ export default function Calendar({ today, selected, markedDays, onSelect }) {
     <div className="calendar">
       <div className="cal-head">
         <button className="icon" onClick={() => shift(-1)} aria-label="Mes anterior">
-          ‹
+          <Icon name="back" />
         </button>
         <strong aria-live="polite">{formatMonth(view.y, view.m)}</strong>
         <button
@@ -39,7 +40,7 @@ export default function Calendar({ today, selected, markedDays, onSelect }) {
           disabled={!canGoNext}
           aria-label="Mes siguiente"
         >
-          ›
+          <Icon name="next" />
         </button>
       </div>
 

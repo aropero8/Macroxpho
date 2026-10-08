@@ -1,4 +1,5 @@
 import { round, scaled, sumTotals } from "../lib/nutrition.js";
+import Icon from "./Icon.jsx";
 
 export default function Results({ dishes, confianza, notas, readOnly, onGramsChange, onRemove }) {
   const t = sumTotals(dishes);
@@ -6,22 +7,24 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
   return (
     <div className="card">
       <div className="total">
-        <div className="kcal">
-          {round(t.kcal)} <span>kcal</span>
+        <div className="kcal num">
+          {round(t.kcal).toLocaleString("es-ES")}
+          <small>kcal</small>
         </div>
         <div className="macros">
-          <div>
-            <strong>{round(t.proteina_g)} g</strong>
-            <span>Proteína</span>
-          </div>
-          <div>
-            <strong>{round(t.carbohidratos_g)} g</strong>
-            <span>Carbohidratos</span>
-          </div>
-          <div>
-            <strong>{round(t.grasas_g)} g</strong>
-            <span>Grasas</span>
-          </div>
+          {[
+            ["Proteína", t.proteina_g],
+            ["Carbohidratos", t.carbohidratos_g],
+            ["Grasas", t.grasas_g],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <strong className="num">
+                {round(value)}
+                <small>g</small>
+              </strong>
+              <span className="label">{label}</span>
+            </div>
+          ))}
         </div>
         {confianza && <div className={`badge ${confianza}`}>Confianza {confianza}</div>}
       </div>
@@ -35,7 +38,7 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
                 <strong>{d.nombre}</strong>
                 {!readOnly && (
                   <button className="icon" onClick={() => onRemove(i)} aria-label="Quitar plato">
-                    ✕
+                    <Icon name="close" />
                   </button>
                 )}
               </div>

@@ -2,6 +2,7 @@ import { formatLong, formatMonth, formatRange, parseKey } from "../lib/date.js";
 import { round } from "../lib/nutrition.js";
 import { currentPeriod, periodKeys, shiftPeriod, summarize } from "../lib/reports.js";
 import BarChart from "./BarChart.jsx";
+import Icon from "./Icon.jsx";
 
 const fmt = (n) => round(n).toLocaleString("es-ES");
 
@@ -39,7 +40,7 @@ export default function Reports({ today, settings, mode, anchor, onChange, onOpe
           onClick={() => onChange(mode, shiftPeriod(mode, anchor, -1))}
           aria-label={isWeek ? "Semana anterior" : "Mes anterior"}
         >
-          ‹
+          <Icon name="back" />
         </button>
         <strong aria-live="polite">{label}</strong>
         <button
@@ -48,7 +49,7 @@ export default function Reports({ today, settings, mode, anchor, onChange, onOpe
           disabled={!canGoNext}
           aria-label={isWeek ? "Semana siguiente" : "Mes siguiente"}
         >
-          ›
+          <Icon name="next" />
         </button>
       </div>
 

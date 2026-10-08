@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useBackLayer } from "../lib/backButton.js";
 import { listDaysWithData } from "../lib/storage.js";
 import Calendar from "./Calendar.jsx";
+import Icon from "./Icon.jsx";
 
 // Panel lateral con el calendario y accesos rápidos. Se cierra al elegir algo,
 // al tocar fuera, con ✕ o con Escape.
@@ -33,9 +34,11 @@ export default function SideMenu({ today, selected, onSelectDay, onToday, onRepo
         onClick={(e) => e.stopPropagation()}
       >
         <div className="menu-head">
-          <strong>Calendario</strong>
+          <strong className="wordmark">
+            Macro<span>Snap</span>
+          </strong>
           <button className="icon" onClick={onClose} aria-label="Cerrar menú">
-            ✕
+            <Icon name="close" />
           </button>
         </div>
 
@@ -48,10 +51,12 @@ export default function SideMenu({ today, selected, onSelectDay, onToday, onRepo
 
         <div className="menu-links">
           <button className="menu-link" onClick={onToday}>
-            📅 Hoy
+            <Icon name="calendar" />
+            Hoy
           </button>
           <button className="menu-link" onClick={onReports}>
-            📊 Informes
+            <Icon name="chart" />
+            Informes
           </button>
         </div>
       </nav>

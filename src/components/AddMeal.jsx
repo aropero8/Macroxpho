@@ -4,7 +4,25 @@ import { makeThumbnail, prepareImage } from "../lib/image.js";
 import { samplePlatos, sampleThumb } from "../lib/devSample.js";
 import { MEAL_LABELS, newId, saveMeal } from "../lib/storage.js";
 import { putThumb } from "../lib/thumbs.js";
+import Icon from "./Icon.jsx";
 import Results from "./Results.jsx";
+
+// Hueco con la forma del resultado mientras Gemini responde (suele tardar unos segundos).
+function ResultsSkeleton() {
+  return (
+    <div className="card skeleton" role="status">
+      <span className="sr-only">Analizando la foto…</span>
+      <span className="sk sk-kcal" />
+      <span className="sk-row">
+        <span className="sk sk-macro" />
+        <span className="sk sk-macro" />
+        <span className="sk sk-macro" />
+      </span>
+      <span className="sk sk-line" />
+      <span className="sk sk-line short" />
+    </div>
+  );
+}
 
 // Analizador de fotos (el de siempre) + guardar el resultado en su hueco del día.
 export default function AddMeal({ date, tipo, apiKey, model, onSaved, onOpenSettings }) {
@@ -116,17 +134,25 @@ export default function AddMeal({ date, tipo, apiKey, model, onSaved, onOpenSett
 
       <div className="card">
         {image ? (
-          <img className="preview" src={image.previewUrl} alt="Comida a analizar" />
+          <div className={loading ? "photo scanning" : "photo"}>
+            <img className="preview" src={image.previewUrl} alt="Comida a analizar" />
+          </div>
         ) : (
-          <div className="placeholder">Haz una foto a tu comida 🍽️</div>
+          <button className="placeholder" onClick={() => cameraRef.current?.click()}>
+            <Icon name="camera" />
+            <span>Haz una foto a tu comida</span>
+            <small>o elige una de la galería</small>
+          </button>
         )}
 
         <div className="row">
-          <button className="btn" onClick={() => cameraRef.current?.click()}>
-            📷 Cámara
+          <button className="btn" disabled={loading} onClick={() => cameraRef.current?.click()}>
+            <Icon name="camera" />
+            Cámara
           </button>
-          <button className="btn" onClick={() => galleryRef.current?.click()}>
-            🖼️ Galería
+          <button className="btn" disabled={loading} onClick={() => galleryRef.current?.click()}>
+            <Icon name="image" />
+            Galería
           </button>
         </div>
 
@@ -158,6 +184,8 @@ export default function AddMeal({ date, tipo, apiKey, model, onSaved, onOpenSett
           {loading ? "Analizando…" : "Analizar macros"}
         </button>
       </div>
+
+      {loading && <ResultsSkeleton />}
 
       {error && <div className="error">{error}</div>}
 

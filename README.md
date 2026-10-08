@@ -13,7 +13,7 @@ Haces una foto (o eliges una de la galería), Gemini identifica los platos y est
 
 ## Qué hace
 
-- **Hoy**: un saludo según la hora del día y un botón grande para abrir la jornada de hoy.
+- **Inicio**: un saludo según la hora, el resumen de hoy (kcal y proteína frente al objetivo) y el botón **Añadir comida**, que propone el hueco según la hora (desayuno, comida, cena o snack) y deja cambiarlo.
 - **Día**: kcal y proteína en grande (carbohidratos y grasas en pequeño) y una barra de proteína frente a tu objetivo ("Quedan 34 g de 144 g" o "+12 g sobre el objetivo"). Debajo, Desayuno, Comida, Cena y una lista de snacks.
 - **Añadir comida**: haces una foto o eliges una de la galería, puedes añadir una nota ("200 g de arroz"), Gemini estima los platos y sus macros, corriges los gramos si hace falta y la guardas en su hueco con una miniatura.
 - **Corregir o borrar**: el día de hoy puedes abrir una comida para ajustar gramos o borrarla. Los días pasados son de solo lectura.
@@ -126,13 +126,16 @@ La app llama a Gemini directamente desde el dispositivo, así que la key vive en
 
 En desarrollo (`npm run dev`) aparece un botón "🧪 Añadir comida de prueba" para probar el diario sin gastar llamadas a Gemini. No aparece en la build de producción.
 
+El aspecto se define con variables CSS al principio de `src/App.css` (colores, tipografía, espaciado, esquinas, sombras y duraciones). Títulos y cifras usan la fuente Outfit (licencia OFL), empaquetada con `@fontsource-variable/outfit` para que funcione sin conexión.
+
 Todo el acceso a datos pasa por `src/lib/storage.js` y `src/lib/thumbs.js`, así que se puede cambiar el almacenamiento sin tocar las pantallas.
 
 ```
 src/
   App.jsx                    navegación por estado de pantalla (sin router) y cabecera
   components/
-    Home.jsx                 pantalla de inicio
+    Home.jsx                 pantalla de inicio (resumen de hoy y Añadir comida)
+    Icon.jsx                 iconos SVG de trazo
     DayView.jsx              día: resumen, barra de proteína, huecos y snacks
     MealSlot.jsx             hueco de una comida (vacío o con miniatura)
     ProteinBar.jsx           barra de proteína

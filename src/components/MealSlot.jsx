@@ -1,4 +1,5 @@
 import { mealName, round } from "../lib/nutrition.js";
+import Icon from "./Icon.jsx";
 import Thumb from "./Thumb.jsx";
 
 export default function MealSlot({ meal, readOnly, onAdd, onOpen }) {
@@ -7,7 +8,8 @@ export default function MealSlot({ meal, readOnly, onAdd, onOpen }) {
       <div className="slot empty">Sin registrar</div>
     ) : (
       <button className="slot empty" onClick={onAdd}>
-        + Añadir
+        <Icon name="plus" />
+        Añadir
       </button>
     );
   }
@@ -21,9 +23,7 @@ export default function MealSlot({ meal, readOnly, onAdd, onOpen }) {
           {round(meal.totales.kcal)} kcal · {round(meal.totales.proteina_g)} g proteína
         </small>
       </span>
-      <span className="chevron" aria-hidden="true">
-        ›
-      </span>
+      <Icon name="next" className="chevron" />
     </button>
   );
 }
