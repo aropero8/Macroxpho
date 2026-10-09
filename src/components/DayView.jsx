@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { formatLong } from "../lib/date.js";
 import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
 import { getDay, MEAL_LABELS, SLOTS } from "../lib/storage.js";
@@ -5,7 +6,41 @@ import Icon from "./Icon.jsx";
 import MealSlot from "./MealSlot.jsx";
 import ProteinRing, { GoalMessage, useGoalCelebration } from "./ProteinRing.jsx";
 
-export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, onOpenToday }) {
+const SWIPE_MIN = 70; // px en horizontal para cambiar de día
+
+// Deslizar a la derecha = día anterior; a la izquierda = siguiente. Solo gestos claramente
+// horizontales, y no al arrastrar dentro de un campo de texto.
+function useSwipe(onPrev, onNext) {
+  const start = useRef(null);
+  return {
+    onTouchStart(e) {
+      const t = e.touches[0];
+      start.current = e.target.closest("input, textarea") ? null : { x: t.clientX, y: t.clientY };
+    },
+    onTouchEnd(e) {
+      if (!start.current) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - start.current.x;
+      const dy = t.clientY - start.current.y;
+      start.current = null;
+      if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
+      if (dx > 0) onPrev?.();
+      else onNext?.();
+    },
+  };
+}
+
+// onPrevDay / onNextDay: cambiar de día con las flechas o deslizando (onNextDay es null en hoy).
+export default function DayView({
+  date,
+  isToday,
+  settings,
+  onAdd,
+  onOpenMeal,
+  onOpenToday,
+  onPrevDay,
+  onNextDay,
+}) {
   const day = getDay(date);
   const readOnly = !isToday;
   const isEmpty = mealsOf(day).length === 0;
@@ -14,23 +49,40 @@ export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, on
   const reached = goal > 0 && round(t.proteina_g) >= goal;
   // Solo hoy se celebra; los días pasados muestran el estado final sin animación.
   const celebration = useGoalCelebration(date, reached, isToday);
+  const swipe = useSwipe(onPrevDay, onNextDay);
 
   const title = (
     <div className="day-title">
       <div>
-        <p className="label">{isToday ? formatLong(date) : "Día pasado"}</p>
+        {isToday ? (
+          <p className="label">{formatLong(date)}</p>
+        ) : (
+          <span className="badge">Día pasado · solo lectura</span>
+        )}
         <h2 className={isToday ? "display" : "display small"}>
           {isToday ? "Hoy" : formatLong(date)}
         </h2>
       </div>
-      {!isToday && <span className="badge">Solo lectura</span>}
+      <div className="day-nav">
+        <button className="icon round" onClick={onPrevDay} aria-label="Día anterior">
+          <Icon name="back" />
+        </button>
+        <button
+          className="icon round"
+          onClick={onNextDay}
+          disabled={!onNextDay}
+          aria-label="Día siguiente"
+        >
+          <Icon name="next" />
+        </button>
+      </div>
     </div>
   );
 
   // Día pasado sin nada: un aviso en vez de un resumen a cero y cuatro huecos vacíos.
   if (readOnly && isEmpty) {
     return (
-      <>
+      <div className="swipe-area" {...swipe}>
         {title}
         <div className="card empty-state">
           <span aria-hidden="true">📭</span>
@@ -39,12 +91,12 @@ export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, on
             Ir a hoy
           </button>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="swipe-area" {...swipe}>
       {title}
 
       <div className="card summary">
@@ -113,6 +165,6 @@ export default function DayView({ date, isToday, settings, onAdd, onOpenMeal, on
             </button>
           )}
       </section>
-    </>
+    </div>
   );
 }

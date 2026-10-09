@@ -148,6 +148,25 @@ export function saveMeal(key, meal) {
   return full;
 }
 
+/**
+ * Vuelve a poner una comida recién borrada tal como estaba (para "Deshacer").
+ * Los snacks se reordenan por hora de guardado para que vuelva a su sitio.
+ */
+export function restoreMeal(key, meal) {
+  const day = getDay(key);
+  const next =
+    meal.tipo === "snack"
+      ? {
+          ...day,
+          snacks: [...day.snacks.filter((s) => s.id !== meal.id), meal].sort((a, b) =>
+            a.savedAt < b.savedAt ? -1 : 1
+          ),
+        }
+      : { ...day, [meal.tipo]: meal };
+  const data = load();
+  persist({ ...data, days: { ...data.days, [key]: next } });
+}
+
 /** Borra una comida. La miniatura la borra quien llama (thumbs.js). */
 export function deleteMeal(key, id) {
   const day = getDay(key);

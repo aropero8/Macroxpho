@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { exitApp, useBackButton } from "./lib/backButton.js";
-import { dateKey } from "./lib/date.js";
+import { addDays, dateKey } from "./lib/date.js";
 import { FALLBACK_MODEL, freeModelOr } from "./lib/models.js";
+import { round } from "./lib/nutrition.js";
 import { currentPeriod } from "./lib/reports.js";
-import { getApiConfig, getSettings, saveApiConfig, saveSettings } from "./lib/storage.js";
+import {
+  getApiConfig,
+  getSettings,
+  MEAL_LABELS,
+  restoreMeal,
+  saveApiConfig,
+  saveSettings,
+} from "./lib/storage.js";
+import { deleteThumb } from "./lib/thumbs.js";
 import AddMeal from "./components/AddMeal.jsx";
 import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
@@ -12,7 +21,15 @@ import MealView from "./components/MealView.jsx";
 import Reports from "./components/Reports.jsx";
 import Settings from "./components/Settings.jsx";
 import SideMenu from "./components/SideMenu.jsx";
+import { useToast } from "./components/Toast.jsx";
 import "./App.css";
+
+const DELETED = {
+  desayuno: "Desayuno borrado",
+  comida: "Comida borrada",
+  cena: "Cena borrada",
+  snack: "Snack borrado",
+};
 
 // Navegación sin router: `screen` describe la pantalla actual.
 //   { name: "home" }
@@ -52,6 +69,7 @@ export default function App() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const [showToast, toastView] = useToast();
 
   function go(next, dir = "none") {
     setScreen(next);
@@ -65,6 +83,10 @@ export default function App() {
   const openReports = () =>
     go({ name: "reports", mode: "week", anchor: currentPeriod("week", today) });
 
+  // Cambiar de día desde el propio día: conserva la pantalla a la que vuelve "‹".
+  const shiftDay = (n) =>
+    go({ ...screen, date: addDays(screen.date, n) }, n < 0 ? "back" : "forward");
+
   function back() {
     if (screen.parent) go(screen.parent, "back");
     else if (screen.name === "addMeal" || screen.name === "meal") go({ name: "day", date: screen.date }, "back");
@@ -74,6 +96,24 @@ export default function App() {
   // Atrás de Android: el menú y los diálogos se cierran solos (useBackLayer);
   // si no hay ninguno abierto, vuelve a la pantalla anterior y solo sale desde Hoy.
   useBackButton(() => (screen.name === "home" ? exitApp() : back()));
+
+  function onMealSaved(meal) {
+    back();
+    showToast({
+      message: `Guardado en ${MEAL_LABELS[meal.tipo].toLowerCase()} · ${round(meal.totales.proteina_g)} g de proteína`,
+    });
+  }
+
+  // Borrar no pide confirmación: se puede deshacer unos segundos y la foto solo se borra
+  // cuando ya no hay vuelta atrás.
+  function onMealDeleted(date, meal) {
+    back();
+    showToast({
+      message: DELETED[meal.tipo],
+      action: { label: "Deshacer", run: () => restoreMeal(date, meal) },
+      onExpire: () => deleteThumb(meal.thumbId),
+    });
+  }
 
   function onSaveSettings({ apiKey: k, model: m, proteinGoal, kcalGoal }) {
     saveApiConfig({ apiKey: k, model: m });
@@ -95,6 +135,8 @@ export default function App() {
           onAdd={(tipo) => child({ name: "addMeal", date: screen.date, tipo })}
           onOpenMeal={(meal) => child({ name: "meal", date: screen.date, mealId: meal.id })}
           onOpenToday={() => openDay(today)}
+          onPrevDay={() => shiftDay(-1)}
+          onNextDay={screen.date < today ? () => shiftDay(1) : null}
         />
       );
       break;
@@ -107,7 +149,7 @@ export default function App() {
             tipo={screen.tipo}
             apiKey={apiKey}
             model={model}
-            onSaved={back}
+            onSaved={onMealSaved}
             onOpenSettings={() => child({ name: "settings" })}
           />
         ) : (
@@ -127,6 +169,11 @@ export default function App() {
           mealId={screen.mealId}
           readOnly={screen.date !== today}
           onDone={back}
+          onSaved={() => {
+            back();
+            showToast({ message: "Cambios guardados" });
+          }}
+          onDeleted={(meal) => onMealDeleted(screen.date, meal)}
         />
       );
       break;
@@ -163,6 +210,7 @@ export default function App() {
           settings={settings}
           hasApiKey={Boolean(apiKey)}
           onOpenToday={() => child({ name: "day", date: today })}
+          onOpenDay={(date) => child({ name: "day", date })}
           onAddMeal={(tipo) => child({ name: "addMeal", date: today, tipo })}
           onOpenSettings={() => child({ name: "settings" })}
         />
@@ -209,6 +257,8 @@ export default function App() {
       <main key={screenKey} className={`screen enter-${navDir}`}>
         {content}
       </main>
+
+      {toastView}
 
       {menuOpen && (
         <SideMenu

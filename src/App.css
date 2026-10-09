@@ -751,6 +751,126 @@ button.link {
   gap: var(--space-3);
 }
 
+/* Esta semana: un mini anillo de proteína por día (--p = fracción del objetivo) */
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.week-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 24px;
+}
+
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--achieve-ink);
+}
+
+.streak .ico {
+  width: 16px;
+  height: 16px;
+  color: var(--achieve);
+}
+
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
+
+.week-day {
+  min-height: var(--tap);
+  padding: var(--space-1) 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
+}
+
+.week-day:active:not(:disabled) {
+  background: rgba(148, 163, 184, 0.12);
+  transform: scale(0.94);
+}
+
+.week-day:disabled {
+  cursor: default;
+  color: var(--faint);
+}
+
+.week-letter {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.week-day:disabled .week-letter {
+  color: var(--faint);
+}
+
+.week-dot {
+  --p: 0;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  isolation: isolate; /* el relleno de ::before queda detrás del número */
+  /* El arco se pinta con un degradado cónico y se vacía por dentro con una máscara */
+  background: conic-gradient(var(--accent) calc(var(--p) * 360deg), var(--ring-track) 0);
+}
+
+.week-dot::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--bg);
+  z-index: -1;
+}
+
+.week-dot .ico {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  stroke-width: 3;
+}
+
+.week-day.today .week-letter {
+  color: var(--accent-bright);
+}
+
+.week-day.today .week-dot::before {
+  box-shadow: inset 0 0 0 1.5px var(--border-strong);
+}
+
+.week-day.done .week-dot {
+  background: var(--achieve);
+  color: var(--bg);
+}
+
+.week-day.done .week-dot::before {
+  display: none;
+}
+
 /* ---------- Día ---------- */
 
 .day-title {
@@ -761,8 +881,32 @@ button.link {
   padding-top: var(--space-2);
 }
 
-.day-title .label {
+.day-title .label,
+.day-title .badge {
   margin-bottom: var(--space-2);
+}
+
+/* Flechas para ir al día anterior / siguiente (también se puede deslizar) */
+.day-nav {
+  display: flex;
+  gap: var(--space-1);
+  flex: none;
+}
+
+.icon.round {
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+
+.icon.round .ico {
+  width: 20px;
+  height: 20px;
+}
+
+/* Envuelve la pantalla del día para recibir los gestos sin cambiar su maquetación */
+.swipe-area {
+  display: contents;
 }
 
 /* Debajo del anillo: kcal, carbohidratos y grasas */
@@ -1318,6 +1462,79 @@ button.slot.empty:active {
   font-variant-numeric: tabular-nums;
 }
 
+/* − [ 150 g ] +: ajustar de 10 en 10 sin abrir el teclado */
+.dish-body {
+  flex-wrap: wrap;
+}
+
+.stepper {
+  gap: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.stepper label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: var(--space-1);
+}
+
+.stepper input {
+  width: 56px;
+  min-height: 40px;
+  padding: 6px 2px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.stepper input::-webkit-inner-spin-button,
+.stepper input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.stepper input:focus {
+  box-shadow: none;
+}
+
+.stepper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.step {
+  width: 40px;
+  min-height: 40px;
+  border: none;
+  background: var(--surface-raised);
+  color: var(--text-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.step .ico {
+  width: 16px;
+  height: 16px;
+}
+
+.step:active:not(:disabled) {
+  background: var(--surface-pressed);
+}
+
+.step:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
 .dish-macros {
   font-size: var(--fs-sm);
   color: var(--muted);
@@ -1798,6 +2015,62 @@ button.slot.empty:active {
 @keyframes slide-up {
   from {
     transform: translateY(100%);
+  }
+}
+
+/* ---------- Avisos breves (toast) ---------- */
+
+.toast-region {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  pointer-events: none;
+}
+
+.toast {
+  width: 100%;
+  max-width: 448px;
+  min-height: 52px;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: #e2e8f0;
+  color: var(--bg);
+  box-shadow: var(--shadow-pop);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  pointer-events: auto;
+  animation: toast-in var(--dur-slow) var(--ease-out);
+}
+
+.toast-action {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: #15803d;
+  font-family: var(--font-display);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toast-action:active {
+  background: rgba(21, 128, 61, 0.12);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
   }
 }
 

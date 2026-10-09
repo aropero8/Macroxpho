@@ -93,8 +93,7 @@ export default function AddMeal({ date, tipo, apiKey, model, onSaved, onOpenSett
     try {
       const id = newId();
       const thumbId = await storeThumb(id, thumbSource);
-      saveMeal(date, { id, tipo, platos, ...extra, thumbId });
-      onSaved();
+      onSaved(saveMeal(date, { id, tipo, platos, ...extra, thumbId }));
     } catch {
       setError("No se pudo guardar la comida. Puede que el almacenamiento esté lleno.");
       setSaving(false);

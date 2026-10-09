@@ -1,6 +1,8 @@
 import { round, scaled, sumTotals } from "../lib/nutrition.js";
 import Icon from "./Icon.jsx";
 
+const STEP = 10; // gramos por toque de − / +
+
 export default function Results({ dishes, confianza, notas, readOnly, onGramsChange, onRemove }) {
   const t = sumTotals(dishes);
 
@@ -46,16 +48,34 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
                 {readOnly ? (
                   <span className="grams">{round(d.gramos)} g</span>
                 ) : (
-                  <label className="grams">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min="0"
-                      value={d.gramos}
-                      onChange={(e) => onGramsChange(i, Number(e.target.value))}
-                    />
-                    <span>g</span>
-                  </label>
+                  <span className="grams stepper">
+                    <button
+                      className="step"
+                      onClick={() => onGramsChange(i, Math.max(0, round(d.gramos) - STEP))}
+                      disabled={d.gramos <= 0}
+                      aria-label={`Quitar ${STEP} g de ${d.nombre}`}
+                    >
+                      <Icon name="minus" />
+                    </button>
+                    <label>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min="0"
+                        value={d.gramos}
+                        onChange={(e) => onGramsChange(i, Number(e.target.value))}
+                        aria-label={`Gramos de ${d.nombre}`}
+                      />
+                      <span aria-hidden="true">g</span>
+                    </label>
+                    <button
+                      className="step"
+                      onClick={() => onGramsChange(i, round(d.gramos) + STEP)}
+                      aria-label={`Añadir ${STEP} g de ${d.nombre}`}
+                    >
+                      <Icon name="plus" />
+                    </button>
+                  </span>
                 )}
                 <span className="dish-macros">
                   {round(s.kcal)} kcal · P {round(s.proteina_g)} · C {round(s.carbohidratos_g)} · G{" "}

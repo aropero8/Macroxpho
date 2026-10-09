@@ -13,11 +13,11 @@ Haces una foto (o eliges una de la galería), Gemini identifica los platos y est
 
 ## Qué hace
 
-- **Inicio**: un saludo según la hora, el resumen de hoy (kcal y proteína frente al objetivo) y el botón **Añadir comida**, que propone el hueco según la hora (desayuno, comida, cena o snack) y deja cambiarlo.
-- **Día**: un anillo de proteína que se llena según comes, con los gramos en el centro y "Quedan 34 g de 144 g" debajo; es neutro al principio, verde al acercarte (desde el 60 %) y dorado al llegar. Debajo, kcal, carbohidratos y grasas, y los huecos de Desayuno, Comida, Cena y snacks.
+- **Inicio**: un saludo según la hora, el resumen de hoy (kcal y proteína frente al objetivo) la tira **Esta semana** (un mini anillo de proteína por día, dorado si llegaste al objetivo, y la racha de días seguidos) y el botón **Añadir comida**, que propone el hueco según la hora (desayuno, comida, cena o snack) y deja cambiarlo.
+- **Día**: un anillo de proteína que se llena según comes, con los gramos en el centro y "Quedan 34 g de 144 g" debajo; es neutro al principio, verde al acercarte (desde el 60 %) y dorado al llegar. Debajo, kcal, carbohidratos y grasas, y los huecos de Desayuno, Comida, Cena y snacks. Con las flechas ‹ › o deslizando a los lados pasas al día anterior o siguiente.
 - **Objetivo conseguido**: al llegar a tu objetivo de proteína aparece "¡Objetivo de proteína conseguido! 💪" (con "+12 g" si te pasas). La primera vez de cada día lo acompañan una pequeña animación y una vibración corta; el mensaje se queda el resto del día. Los días pasados muestran solo el estado final, sin animación.
-- **Añadir comida**: haces una foto o eliges una de la galería, puedes añadir una nota ("200 g de arroz"), Gemini estima los platos y sus macros, corriges los gramos si hace falta y la guardas en su hueco con una miniatura.
-- **Corregir o borrar**: el día de hoy puedes abrir una comida para ajustar gramos o borrarla. Los días pasados son de solo lectura.
+- **Añadir comida**: haces una foto o eliges una de la galería, puedes añadir una nota ("200 g de arroz"), Gemini estima los platos y sus macros, corriges los gramos si hace falta (escribiéndolos o con − / + de 10 en 10) y la guardas en su hueco con una miniatura.
+- **Corregir o borrar**: el día de hoy puedes abrir una comida para ajustar gramos o borrarla; al borrar aparece **Deshacer** durante unos segundos. Los días pasados son de solo lectura.
 - **Calendario** (menú ☰): marca los días con comidas y permite abrir cualquier día pasado.
 - **Informes** semanales (lunes a domingo) y mensuales: totales, media diaria, días en que alcanzaste el objetivo de proteína y gráficos de kcal y proteína por día con la línea del objetivo.
 - **Ajustes**: objetivo diario de proteína (144 g por defecto), objetivo de kcal opcional, API key, modelo y copia de seguridad (exportar/importar JSON).

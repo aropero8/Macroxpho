@@ -4,10 +4,20 @@ import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
 import { getDay, MEAL_LABELS, SLOTS, suggestSlot } from "../lib/storage.js";
 import Icon from "./Icon.jsx";
 import ProteinRing, { useGoalCelebration } from "./ProteinRing.jsx";
+import WeekStrip from "./WeekStrip.jsx";
 
 const TARGETS = [...SLOTS, "snack"];
 
-export default function Home({ now, today, settings, hasApiKey, onOpenToday, onAddMeal, onOpenSettings }) {
+export default function Home({
+  now,
+  today,
+  settings,
+  hasApiKey,
+  onOpenToday,
+  onOpenDay,
+  onAddMeal,
+  onOpenSettings,
+}) {
   const { hello, question } = greeting(now);
   const day = getDay(today);
   const t = dayTotals(day);
@@ -71,6 +81,8 @@ export default function Home({ now, today, settings, hasApiKey, onOpenToday, onA
           </span>
         </span>
       </button>
+
+      <WeekStrip today={today} goal={goal} onOpenDay={onOpenDay} />
 
       {!hasApiKey && (
         <div className="card notice">

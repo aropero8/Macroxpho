@@ -1,25 +1,16 @@
 import { useState } from "react";
 import { deleteMeal, findMeal, MEAL_LABELS, saveMeal } from "../lib/storage.js";
-import { deleteThumb } from "../lib/thumbs.js";
-import { useConfirm } from "./ConfirmDialog.jsx";
 import Results from "./Results.jsx";
 import Thumb from "./Thumb.jsx";
 
-const WITH_ARTICLE = {
-  desayuno: "el desayuno",
-  comida: "la comida",
-  cena: "la cena",
-  snack: "el snack",
-};
-
 // Detalle de una comida guardada. Hoy se pueden corregir gramos o borrarla;
-// los días pasados se muestran en solo lectura.
-export default function MealView({ date, mealId, readOnly, onDone }) {
+// los días pasados se muestran en solo lectura. Borrar no pide confirmación: quien llama
+// ofrece "Deshacer" (onDeleted) y la foto solo se borra si no se deshace.
+export default function MealView({ date, mealId, readOnly, onDone, onSaved, onDeleted }) {
   const [meal] = useState(() => findMeal(date, mealId));
   const [platos, setPlatos] = useState(() => meal?.platos ?? []);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState("");
-  const [confirm, dialog] = useConfirm();
 
   if (!meal) {
     return (
@@ -39,24 +30,15 @@ export default function MealView({ date, mealId, readOnly, onDone }) {
 
   function save() {
     try {
-      saveMeal(date, { ...meal, platos });
-      onDone();
+      onSaved(saveMeal(date, { ...meal, platos }));
     } catch {
       setError("No se pudo guardar. Puede que el almacenamiento esté lleno.");
     }
   }
 
-  async function remove() {
-    const ok = await confirm({
-      title: `¿Borrar ${WITH_ARTICLE[meal.tipo]}?`,
-      message: "Se borrarán sus platos y su foto. No se puede deshacer.",
-      confirmLabel: "Borrar",
-      danger: true,
-    });
-    if (!ok) return;
+  function remove() {
     deleteMeal(date, meal.id);
-    deleteThumb(meal.thumbId);
-    onDone();
+    onDeleted(meal);
   }
 
   return (
@@ -104,8 +86,6 @@ export default function MealView({ date, mealId, readOnly, onDone }) {
           </div>
         </>
       )}
-
-      {dialog}
     </>
   );
 }
