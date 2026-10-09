@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { saveTextFile } from "../lib/backupFile.js";
 import { dateKey } from "../lib/date.js";
 import { FREE_MODELS, isFreeModel } from "../lib/models.js";
 import {
@@ -38,16 +39,15 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
     }
   }
 
-  function exportFile() {
-    const blob = new Blob([exportBackup()], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `macrosnap-copia-${dateKey()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  async function exportFile() {
+    setError("");
+    setMessage("");
+    try {
+      const done = await saveTextFile(`macrosnap-copia-${dateKey()}.json`, exportBackup());
+      if (done) setMessage("Copia exportada.");
+    } catch {
+      setError("No se pudo exportar la copia.");
+    }
   }
 
   async function importFile(e) {

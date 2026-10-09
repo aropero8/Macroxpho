@@ -93,7 +93,7 @@ Para depurar la parte web dentro del móvil, abre `chrome://inspect` en Chrome d
 - **Botón Atrás** (`@capacitor/app`): cierra el diálogo o el menú si hay uno abierto, si no vuelve a la pantalla anterior, y solo sale de la app desde la pantalla de inicio.
 - **Barra de estado y zonas seguras:** en `capacitor.config.json`, `SystemBars` pone iconos claros sobre el fondo oscuro y hace que `env(safe-area-inset-*)` del CSS funcione con el notch y la barra de navegación. `backgroundColor` evita el destello blanco al abrir.
 - **Icono y pantalla de inicio:** el icono es un vector (`android/app/src/main/res/drawable/ic_macrosnap_foreground.xml`) y los colores están en `res/values/colors.xml`. Los PNG de `mipmap-*` son solo para Android 7 y salen del mismo diseño.
-- **Exportar copia** usa una descarga del navegador, que dentro de la app de Android puede no funcionar. Para guardarla o compartirla desde la app harían falta `@capacitor/filesystem` y `@capacitor/share` (no están instalados).
+- **Exportar copia** (`@capacitor/filesystem` y `@capacitor/share`): en Android, el WebView ignora las descargas del navegador, así que el JSON se escribe en la caché de la app y se abre el menú de compartir del sistema, desde donde puedes guardarlo en Drive o en Archivos, o enviarlo por correo. En el navegador se descarga normalmente.
 
 ## Dónde se guardan los datos
 
@@ -163,6 +163,7 @@ src/
     date.js                  fechas en hora local
     backButton.js            botón Atrás de Android (@capacitor/app)
     haptics.js               vibración al conseguir el objetivo (@capacitor/haptics)
+    backupFile.js            exportar la copia: descarga o menú de compartir de Android
     devSample.js             comida de prueba (solo desarrollo)
 android/                     proyecto Android generado por Capacitor
   app/src/main/AndroidManifest.xml     permisos y <queries> de la cámara
