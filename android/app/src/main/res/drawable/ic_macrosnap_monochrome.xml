@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Icono monocromo (iconos temáticos de Android 13+): la misma silueta que
+  ic_macrosnap_foreground, sin halo ni colores; el sistema la tiñe.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Lámina 1 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M56.2,43.2L72.14,34A27,27 0 0,1 80.79,57.39Z" />
+    <!-- Lámina 2 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M64.45,50.51L80.39,59.71A27,27 0 0,1 64.45,78.89Z" />
+    <!-- Lámina 3 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M62.25,61.31L62.25,79.71A27,27 0 0,1 37.67,75.5Z" />
+    <!-- Lámina 4 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M51.8,64.8L35.86,74A27,27 0 0,1 27.21,50.61Z" />
+    <!-- Lámina 5 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M43.55,57.49L27.61,48.29A27,27 0 0,1 43.55,29.11Z" />
+    <!-- Lámina 6 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M45.75,46.69L45.75,28.29A27,27 0 0,1 70.33,32.5Z" />
+    <!-- Destello -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,47.6C55.15,52.85 55.15,52.85 60.4,54C55.15,55.15 55.15,55.15 54,60.4C52.85,55.15 52.85,55.15 47.6,54C52.85,52.85 52.85,52.85 54,47.6Z" />
+</vector>

@@ -1,26 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Icono de MacroSnap: una cámara verde (el "snap") sobre el fondo azul oscuro de la app.
+  Icono de MacroSnap: el diafragma de una cámara (el "snap") en verde, con un destello
+  dorado en el centro (el dorado de "objetivo conseguido"). Las láminas se sombrean como
+  si la luz viniera de arriba a la izquierda.
   Lienzo de 108x108 de los iconos adaptativos; el dibujo cabe en la zona segura central
   (círculo de 66 de diámetro), así que no se recorta con ninguna forma de icono.
-  El objetivo es un hueco (evenOdd), por eso también sirve como icono monocromo (Android 13+).
+  También es el icono de la pantalla de inicio (splash.xml y styles.xml).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Visor -->
+    <!-- Halo verde detrás del diafragma -->
     <path
-        android:fillColor="@color/macrosnap_accent"
-        android:pathData="M47,35H57A3,3 0 0 1 60,38V45H44V38A3,3 0 0 1 47,35Z" />
-    <!-- Cuerpo con el hueco del objetivo -->
+        android:pathData="M14,54A40,40 0 1,1 94,54A40,40 0 1,1 14,54Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="40">
+                <item android:offset="0" android:color="#5222C55E" />
+                <item android:offset="0.55" android:color="#2D22C55E" />
+                <item android:offset="1" android:color="#0022C55E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lámina 1 -->
     <path
-        android:fillColor="@color/macrosnap_accent"
-        android:fillType="evenOdd"
-        android:pathData="M37,41H71A7,7 0 0 1 78,48V66A7,7 0 0 1 71,73H37A7,7 0 0 1 30,66V48A7,7 0 0 1 37,41Z M54,46A11,11 0 1 0 54,68A11,11 0 1 0 54,46Z" />
-    <!-- Lente -->
+        android:pathData="M56.2,43.2L72.14,34A27,27 0 0,1 80.79,57.39Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="79.33"
+                android:startY="44.65"
+                android:endX="56.2"
+                android:endY="43.2">
+                <item android:offset="0" android:color="#FF32B863" />
+                <item android:offset="1" android:color="#FF158C41" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lámina 2 -->
     <path
-        android:fillColor="@color/macrosnap_accent_light"
-        android:pathData="M54,51.5A5.5,5.5 0 1 0 54,62.5A5.5,5.5 0 1 0 54,51.5Z" />
+        android:pathData="M64.45,50.51L80.39,59.71A27,27 0 0,1 64.45,78.89Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="74.76"
+                android:startY="71.26"
+                android:endX="64.45"
+                android:endY="50.51">
+                <item android:offset="0" android:color="#FF2A9252" />
+                <item android:offset="1" android:color="#FF0E6D34" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lámina 3 -->
+    <path
+        android:pathData="M62.25,61.31L62.25,79.71A27,27 0 0,1 37.67,75.5Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="49.44"
+                android:startY="80.61"
+                android:endX="62.25"
+                android:endY="61.31">
+                <item android:offset="0" android:color="#FF2FB15F" />
+                <item android:offset="1" android:color="#FF13863E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lámina 4 -->
+    <path
+        android:pathData="M51.8,64.8L35.86,74A27,27 0 0,1 27.21,50.61Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="28.67"
+                android:startY="63.35"
+                android:endX="51.8"
+                android:endY="64.8">
+                <item android:offset="0" android:color="#FF51DA84" />
+                <item android:offset="1" android:color="#FF2EA75B" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lámina 5 -->
+    <path
+        android:pathData="M43.55,57.49L27.61,48.29A27,27 0 0,1 43.55,29.11Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="33.24"
+                android:startY="36.74"
+                android:endX="43.55"
+                android:endY="57.49">
+                <item android:offset="0" android:color="#FF7DEAA4" />
+                <item android:offset="1" android:color="#FF51B475" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Lámina 6 -->
+    <path
+        android:pathData="M45.75,46.69L45.75,28.29A27,27 0 0,1 70.33,32.5Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="58.56"
+                android:startY="27.39"
+                android:endX="45.75"
+                android:endY="46.69">
+                <item android:offset="0" android:color="#FF5AE08B" />
+                <item android:offset="1" android:color="#FF35AC61" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Brillo del destello -->
+    <path
+        android:pathData="M47.92,54A6.08,6.08 0 1,1 60.08,54A6.08,6.08 0 1,1 47.92,54Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="6.08">
+                <item android:offset="0" android:color="#73FBBF24" />
+                <item android:offset="1" android:color="#00FBBF24" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Destello dorado -->
+    <path
+        android:pathData="M54,47.6C55.15,52.85 55.15,52.85 60.4,54C55.15,55.15 55.15,55.15 54,60.4C52.85,55.15 52.85,55.15 47.6,54C52.85,52.85 52.85,52.85 54,47.6Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54"
+                android:startY="47.6"
+                android:endX="54"
+                android:endY="60.4">
+                <item android:offset="0" android:color="#FFFDE68A" />
+                <item android:offset="1" android:color="#FFF59E0B" />
+            </gradient>
+        </aapt:attr>
+    </path>
 </vector>
