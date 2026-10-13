@@ -6,7 +6,7 @@ import Icon from "./Icon.jsx";
 
 // Panel lateral con el calendario y accesos rápidos. Se cierra al elegir algo,
 // al tocar fuera, con ✕ o con Escape.
-export default function SideMenu({ today, selected, onSelectDay, onToday, onReports, onClose }) {
+export default function SideMenu({ today, selected, onSelectDay, onToday, onReports, onMenu, onClose }) {
   const panelRef = useRef(null);
   useBackLayer(onClose); // Atrás de Android cierra el menú
 
@@ -57,6 +57,10 @@ export default function SideMenu({ today, selected, onSelectDay, onToday, onRepo
           <button className="menu-link" onClick={onReports}>
             <Icon name="chart" />
             Informes
+          </button>
+          <button className="menu-link" onClick={onMenu}>
+            <Icon name="sparkle" />
+            ¿Qué pido?
           </button>
         </div>
       </nav>

@@ -16,6 +16,7 @@ export default function Home({
   onOpenToday,
   onOpenDay,
   onAddMeal,
+  onOpenMenu,
   onOpenSettings,
 }) {
   const { hello, question } = greeting(now);
@@ -122,6 +123,10 @@ export default function Home({
         <button className="btn primary xl" onClick={() => onAddMeal(target)}>
           <Icon name="plus" />
           Añadir comida
+        </button>
+        <button className="btn ghost" onClick={onOpenMenu}>
+          <Icon name="sparkle" />
+          ¿Dudas qué pedir? Compara menús
         </button>
       </div>
     </div>

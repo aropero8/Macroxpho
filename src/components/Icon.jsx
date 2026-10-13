@@ -38,6 +38,12 @@ const PATHS = {
     </>
   ),
   chart: <path d="M6 20V11M12 20V5M18 20v-7" />,
+  sparkle: (
+    <>
+      <path d="M11 4l1.8 4.7L17.5 10.5l-4.7 1.8L11 17l-1.8-4.7L4.5 10.5l4.7-1.8z" />
+      <path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z" />
+    </>
+  ),
 };
 
 export default function Icon({ name, className = "" }) {

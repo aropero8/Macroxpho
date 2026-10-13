@@ -20,8 +20,9 @@ async function drawScaled(source, maxSide) {
   return canvas;
 }
 
-export async function prepareImage(file) {
-  const canvas = await drawScaled(file, MAX_SIDE);
+// Las cartas necesitan más resolución que un plato para que se lea la letra pequeña.
+export async function prepareImage(file, maxSide = MAX_SIDE) {
+  const canvas = await drawScaled(file, maxSide);
   const dataUrl = canvas.toDataURL("image/jpeg", QUALITY);
   return {
     previewUrl: dataUrl,
