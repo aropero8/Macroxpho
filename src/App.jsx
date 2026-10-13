@@ -17,6 +17,7 @@ import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
 import Icon from "./components/Icon.jsx";
 import MealView from "./components/MealView.jsx";
+import MenuAdvisor from "./components/MenuAdvisor.jsx";
 import Reports from "./components/Reports.jsx";
 import Settings from "./components/Settings.jsx";
 import SideMenu from "./components/SideMenu.jsx";
@@ -35,6 +36,7 @@ const DELETED = {
 //   { name: "day", date }
 //   { name: "addMeal", date, tipo }
 //   { name: "meal", date, mealId }
+//   { name: "menu" }       recomendador de menús ("¿Qué pido?")
 //   { name: "settings" }
 //   { name: "reports", mode: "week" | "month", anchor }
 // Cualquiera puede llevar `parent`: la pantalla a la que vuelve "‹"
@@ -184,6 +186,17 @@ export default function App() {
         />
       );
       break;
+    case "menu":
+      content = (
+        <MenuAdvisor
+          today={today}
+          settings={settings}
+          apiKey={apiKey}
+          onSaved={onMealSaved}
+          onOpenSettings={() => child({ name: "settings" })}
+        />
+      );
+      break;
     case "settings":
       content = (
         <Settings
@@ -205,6 +218,7 @@ export default function App() {
           onOpenToday={() => child({ name: "day", date: today })}
           onOpenDay={(date) => child({ name: "day", date })}
           onAddMeal={(tipo) => child({ name: "addMeal", date: today, tipo })}
+          onOpenMenu={() => child({ name: "menu" })}
           onOpenSettings={() => child({ name: "settings" })}
         />
       );
@@ -260,6 +274,7 @@ export default function App() {
           onSelectDay={openDay}
           onToday={() => openDay(today)}
           onReports={openReports}
+          onMenu={() => go({ name: "menu" })}
           onClose={closeMenu}
         />
       )}

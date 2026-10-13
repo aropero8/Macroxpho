@@ -1734,6 +1734,214 @@ button.slot.empty:active {
   }
 }
 
+/* ---------- ¿Qué pido? (recomendador de menús) ---------- */
+
+.menu-photos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.menu-photo {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.menu-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: filter var(--dur-slow) ease;
+}
+
+.menu-photos.scanning .menu-photo img {
+  filter: saturate(0.6) brightness(0.7);
+}
+
+.menu-photos.scanning .menu-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(74, 222, 128, 0.22) 85%, rgba(74, 222, 128, 0.95) 99%, transparent);
+  animation: scan 1.8s ease-in-out infinite;
+}
+
+.menu-photo-num {
+  position: absolute;
+  left: var(--space-2);
+  top: var(--space-2);
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--scrim);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+/* Área táctil de 44 px con un círculo visible más pequeño */
+.menu-photo-remove {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.menu-photo-remove .ico {
+  width: 26px;
+  height: 26px;
+  padding: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--scrim);
+}
+
+.menu-photo-remove:disabled {
+  opacity: 0;
+}
+
+button.menu-photo.add {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  border: 1.5px dashed var(--border-strong);
+  color: var(--accent);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur) ease;
+}
+
+button.menu-photo.add:active:not(:disabled) {
+  transform: scale(0.97);
+  border-color: var(--accent-line);
+}
+
+button.menu-photo.add:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.menu-photo.add .ico {
+  width: 28px;
+  height: 28px;
+}
+
+.verdict {
+  border-color: var(--achieve-line);
+  background: linear-gradient(180deg, var(--achieve-soft), transparent 70%), var(--surface);
+  gap: var(--space-2);
+  animation: fade-in var(--dur-slow) ease;
+}
+
+.verdict-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.verdict-head .label {
+  color: var(--achieve-ink);
+}
+
+.verdict h3 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur) ease,
+    background-color var(--dur) ease;
+}
+
+.option:active {
+  transform: scale(0.98);
+}
+
+.option[aria-checked="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+
+.option-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option-info strong {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.option-info small {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.option-info .option-why {
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}
+
+.option-score {
+  flex: none;
+  padding-right: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-soft);
+}
+
+.option-score small {
+  font-size: 0.6em;
+  color: var(--muted);
+}
+
+.option-score.best {
+  color: var(--achieve);
+}
+
 /* ---------- Informes ---------- */
 
 .segmented {
