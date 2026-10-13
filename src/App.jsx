@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { exitApp, useBackButton } from "./lib/backButton.js";
 import { addDays, dateKey } from "./lib/date.js";
-import { FALLBACK_MODEL, freeModelOr } from "./lib/models.js";
 import { round } from "./lib/nutrition.js";
 import { currentPeriod } from "./lib/reports.js";
 import {
@@ -44,8 +43,6 @@ export default function App() {
   const [apiKey, setApiKey] = useState(
     () => getApiConfig().apiKey || import.meta.env.VITE_GEMINI_API_KEY || ""
   );
-  // Solo se usan modelos gratuitos: si el guardado no lo es, se usa el de por defecto.
-  const [model, setModel] = useState(() => freeModelOr(getApiConfig().model));
   const [settings, setSettings] = useState(getSettings);
   const [screen, setScreen] = useState({ name: "home" });
   // Sentido de la última navegación, para la transición: "forward", "back" o "none".
@@ -115,11 +112,10 @@ export default function App() {
     });
   }
 
-  function onSaveSettings({ apiKey: k, model: m, proteinGoal, kcalGoal }) {
-    saveApiConfig({ apiKey: k, model: m });
+  function onSaveSettings({ apiKey: k, proteinGoal, kcalGoal }) {
+    saveApiConfig({ apiKey: k });
     saveSettings({ proteinGoal, kcalGoal });
     setApiKey(k);
-    setModel(m);
     setSettings({ proteinGoal, kcalGoal });
     back();
   }
@@ -148,7 +144,6 @@ export default function App() {
             date={screen.date}
             tipo={screen.tipo}
             apiKey={apiKey}
-            model={model}
             onSaved={onMealSaved}
             onOpenSettings={() => child({ name: "settings" })}
           />
@@ -193,8 +188,6 @@ export default function App() {
       content = (
         <Settings
           apiKey={apiKey}
-          model={model}
-          defaultModel={FALLBACK_MODEL}
           settings={settings}
           onSave={onSaveSettings}
           onClose={back}

@@ -25,7 +25,7 @@ function ResultsSkeleton() {
 }
 
 // Analizador de fotos (el de siempre) + guardar el resultado en su hueco del día.
-export default function AddMeal({ date, tipo, apiKey, model, onSaved, onOpenSettings }) {
+export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings }) {
   const [image, setImage] = useState(null); // { previewUrl, base64, mimeType, file }
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,6 @@ export default function AddMeal({ date, tipo, apiKey, model, onSaved, onOpenSett
     try {
       const data = await analyzeFoodImage({
         apiKey,
-        model,
         base64: image.base64,
         mimeType: image.mimeType,
         note,

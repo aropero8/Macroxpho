@@ -8,7 +8,7 @@ import { mealsOf, sumTotals } from "./nutrition.js";
 const DATA_KEY = "macrosnap.data";
 const SETTINGS_KEY = "macrosnap.settings";
 const API_KEY_KEY = "macrosnap.apiKey";
-const MODEL_KEY = "macrosnap.model";
+const MODEL_KEY = "macrosnap.model"; // ya no se usa: el modelo se elige solo (ver gemini.js)
 const CELEBRATED_KEY = "macrosnap.celebrated"; // último día en que se celebró el objetivo
 
 export const DATA_VERSION = 1;
@@ -191,12 +191,12 @@ export function saveSettings({ proteinGoal, kcalGoal }) {
 }
 
 export function getApiConfig() {
-  return { apiKey: readItem(API_KEY_KEY) || "", model: readItem(MODEL_KEY) || "" };
+  return { apiKey: readItem(API_KEY_KEY) || "" };
 }
 
-export function saveApiConfig({ apiKey, model }) {
+export function saveApiConfig({ apiKey }) {
   localStorage.setItem(API_KEY_KEY, apiKey);
-  localStorage.setItem(MODEL_KEY, model);
+  localStorage.removeItem(MODEL_KEY);
 }
 
 /* ---------- Celebración del objetivo ---------- */
