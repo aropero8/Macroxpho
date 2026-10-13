@@ -20,7 +20,7 @@ Haces una foto (o eliges una de la galería), Gemini identifica los platos y est
 - **Corregir o borrar**: el día de hoy puedes abrir una comida para ajustar gramos o borrarla; al borrar aparece **Deshacer** durante unos segundos. Los días pasados son de solo lectura.
 - **Calendario** (menú ☰): marca los días con comidas y permite abrir cualquier día pasado.
 - **Informes** semanales (lunes a domingo) y mensuales: totales, media diaria, días en que alcanzaste el objetivo de proteína y gráficos de kcal y proteína por día con la línea del objetivo.
-- **Ajustes**: objetivo diario de proteína (144 g por defecto), objetivo de kcal opcional, API key, modelo y copia de seguridad (exportar/importar JSON).
+- **Ajustes**: objetivo diario de proteína (144 g por defecto), objetivo de kcal opcional, API key y copia de seguridad (exportar/importar JSON).
 
 Las estimaciones a partir de una foto son aproximadas: la app no sustituye a un profesional de la nutrición.
 
@@ -34,7 +34,7 @@ MacroSnap no incluye ninguna API key: **cada persona usa la suya**. Conseguirla 
 
 La key se guarda solo en tu dispositivo y solo se envía a Google, en cada análisis. No la compartas ni la subas a ningún repositorio.
 
-La capa gratuita tiene límites de peticiones por minuto y por día; puedes ver los tuyos en https://aistudio.google.com/rate-limit. Si te pasas, la app te avisa y basta con esperar un poco o probar otro modelo en Ajustes.
+La capa gratuita tiene límites de peticiones por minuto y por día; puedes ver los tuyos en https://aistudio.google.com/rate-limit. Cada modelo tiene su propio límite: si se agota el de uno, la app pasa sola al siguiente, y solo te avisa si se han agotado todos.
 
 ## Usarla en el navegador
 
@@ -104,7 +104,7 @@ Todo se queda en el dispositivo; a Google solo se envían la foto y la nota cuan
 | Días y comidas | `localStorage` → `macrosnap.data`, con un campo `version` para futuras migraciones |
 | Objetivos | `localStorage` → `macrosnap.settings` |
 | Último día en que se celebró el objetivo | `localStorage` → `macrosnap.celebrated` |
-| API key y modelo | `localStorage` → `macrosnap.apiKey` y `macrosnap.model` |
+| API key | `localStorage` → `macrosnap.apiKey` |
 | Miniaturas | IndexedDB → base `macrosnap`, almacén `thumbs` (JPEG de 200 px, calidad 0.6). Si IndexedDB falla, la app sigue funcionando sin miniaturas. |
 
 - Cada día se guarda con la clave `YYYY-MM-DD` calculada con la **hora local** del dispositivo (nunca UTC), y "hoy" se recalcula si la app sigue abierta pasada la medianoche.
@@ -114,8 +114,9 @@ Todo se queda en el dispositivo; a Google solo se envían la foto y la nota cuan
 
 ## Modelo y capa gratuita
 
-- En Ajustes hay un desplegable que **solo muestra modelos con capa gratuita** que aceptan fotos: `gemini-3.8-flash` (el más reciente), `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash` (por defecto), `gemini-3.5-flash-lite` y `gemini-3.1-flash-lite` (Google lo retira el 7 de mayo de 2027). La lista está en `src/lib/models.js` y se revisó en octubre de 2026 con https://ai.google.dev/gemini-api/docs/pricing; si Google la cambia, basta con editar ese archivo.
-- Si hay guardado un modelo que no está en la lista, o `VITE_GEMINI_MODEL` apunta a uno de pago, la app usa el de por defecto.
+- **El modelo se elige solo.** La app usa siempre modelos con capa gratuita que aceptan fotos: primero `gemini-3.5-flash` (el de por defecto) y, si falla, prueba sin que hagas nada los siguientes en este orden: `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash-lite` y `gemini-3.1-flash-lite` (Google lo retira el 7 de mayo de 2027). La lista está en `src/lib/models.js` y se revisó en octubre de 2026 con https://ai.google.dev/gemini-api/docs/pricing; si Google la cambia, basta con editar ese archivo.
+- Se pasa al siguiente modelo si el actual ha agotado su límite, no existe o se ha retirado, no tiene permiso, Google está saturado o la respuesta llega vacía o con un formato raro. Si el problema es la API key, la conexión o que Google bloquea la foto, cambiar de modelo no ayuda y la app avisa directamente.
+- `VITE_GEMINI_MODEL` cambia cuál se prueba primero; si apunta a uno que no está en la lista, se ignora.
 - Fuera de la lista quedan los 2.5 (no tienen fecha de retirada, pero Google limita el acceso a quien ya los usaba: https://ai.google.dev/gemini-api/docs/deprecations), los preview y los modelos de voz, imagen o embeddings.
 - En la capa gratuita Google puede usar los datos enviados para mejorar sus modelos y no está pensada para uso comercial.
 
@@ -149,12 +150,12 @@ src/
     Calendar.jsx             calendario mensual
     Reports.jsx              informes semanal y mensual
     BarChart.jsx             gráfico de barras SVG hecho a mano
-    Settings.jsx             objetivos, API key, modelo y copia de seguridad
+    Settings.jsx             objetivos, API key y copia de seguridad
     ConfirmDialog.jsx        diálogo de confirmación (useConfirm)
     Thumb.jsx                miniatura desde IndexedDB
   lib/
-    gemini.js                cliente REST de Gemini + esquema JSON
-    models.js                lista de modelos gratuitos para el desplegable
+    gemini.js                cliente REST de Gemini + esquema JSON + cambio automático de modelo
+    models.js                lista de modelos gratuitos y orden en que se prueban
     image.js                 redimensionado de la foto y miniaturas
     storage.js               acceso a datos (localStorage) y copia de seguridad
     thumbs.js                miniaturas en IndexedDB

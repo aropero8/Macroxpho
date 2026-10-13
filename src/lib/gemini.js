@@ -3,9 +3,7 @@
 // IMPORTANTE: llamar a Gemini directamente desde la app expone la API key en el
 // dispositivo. Vale para probar con la capa gratuita; para publicar la app, mueve
 // esta llamada a un backend propio (ver README).
-
-export const DEFAULT_MODEL =
-  import.meta.env.VITE_GEMINI_MODEL || "gemini-3.5-flash";
+import { MODEL_CHAIN } from "./models.js";
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -50,31 +48,69 @@ const SCHEMA = {
   required: ["es_comida", "platos", "confianza"],
 };
 
-function friendlyError(status, body) {
+// Error de un intento. `fallback` indica si merece la pena probar con otro modelo
+// (límite agotado, modelo retirado o sin permiso, Google saturado, respuesta rara…).
+// Con la API key mal, sin conexión o con la petición bloqueada, cambiar de modelo no ayuda.
+class GeminiError extends Error {
+  constructor(message, { fallback = false, status } = {}) {
+    super(message);
+    this.fallback = fallback;
+    this.status = status;
+  }
+}
+
+function httpError(status, body) {
   const msg = body?.error?.message || "";
+  if ((status === 400 && /api key/i.test(msg)) || status === 401)
+    return new GeminiError("La API key no es válida. Revísala en Ajustes.", { status });
   if (status === 429)
-    return "Has superado el límite de la capa gratuita (por minuto o por día). Espera un poco e inténtalo de nuevo.";
-  if (status === 400 && /api key/i.test(msg))
-    return "La API key no es válida. Revísala en Ajustes.";
+    return new GeminiError(
+      "Has superado el límite de la capa gratuita (por minuto o por día). Espera un poco e inténtalo de nuevo.",
+      { fallback: true, status }
+    );
   if (status === 403)
-    return "La API key no tiene permiso para usar este modelo o está restringida.";
+    return new GeminiError(
+      "La API key no tiene permiso para usar los modelos de Gemini o está restringida.",
+      { fallback: true, status }
+    );
   if (status === 404)
-    return "No se encuentra el modelo. Puede que se haya renombrado o retirado: cámbialo en Ajustes.";
-  return msg || `Error ${status} al llamar a Gemini.`;
+    return new GeminiError(
+      "No se encuentra el modelo. Puede que Google lo haya renombrado o retirado.",
+      { fallback: true, status }
+    );
+  return new GeminiError(msg || `Error ${status} al llamar a Gemini.`, { fallback: true, status });
 }
 
 /**
- * @param {{apiKey: string, model?: string, base64: string, mimeType: string, note?: string}} p
+ * Pide a Gemini una respuesta JSON que cumpla `schema`. Prueba los modelos gratuitos
+ * en orden (primero el de por defecto) y devuelve la del primero que funcione.
+ * @param {{apiKey: string, parts: object[], schema: object}} p
  */
-export async function analyzeFoodImage({
-  apiKey,
-  model = DEFAULT_MODEL,
-  base64,
-  mimeType,
-  note,
-}) {
+export async function generateJSON({ apiKey, parts, schema }) {
   if (!apiKey) throw new Error("Falta la API key. Añádela en Ajustes.");
 
+  const errors = [];
+  for (const model of MODEL_CHAIN) {
+    try {
+      return await callModel({ apiKey, model, parts, schema });
+    } catch (err) {
+      if (!err.fallback) throw err;
+      errors.push(err);
+    }
+  }
+
+  // Han fallado todos. Si todos fueron por límite, se dice así; si no, el último error.
+  if (errors.every((e) => e.status === 429))
+    throw new Error(
+      "Has agotado el límite gratuito de todos los modelos de Gemini. Espera un poco (o hasta mañana) e inténtalo de nuevo."
+    );
+  throw new Error(`Ningún modelo de Gemini pudo responder. ${errors.at(-1).message}`);
+}
+
+/**
+ * @param {{apiKey: string, base64: string, mimeType: string, note?: string}} p
+ */
+export function analyzeFoodImage({ apiKey, base64, mimeType, note }) {
   const parts = [
     { inlineData: { mimeType, data: base64 } },
     {
@@ -83,7 +119,10 @@ export async function analyzeFoodImage({
         : PROMPT,
     },
   ];
+  return generateJSON({ apiKey, parts, schema: SCHEMA });
+}
 
+async function callModel({ apiKey, model, parts, schema }) {
   let res;
   try {
     res = await fetch(`${API_BASE}/${encodeURIComponent(model)}:generateContent`, {
@@ -96,16 +135,16 @@ export async function analyzeFoodImage({
         contents: [{ role: "user", parts }],
         generationConfig: {
           responseMimeType: "application/json",
-          responseSchema: SCHEMA,
+          responseSchema: schema,
         },
       }),
     });
   } catch {
-    throw new Error("No se pudo conectar. Revisa tu conexión a internet.");
+    throw new GeminiError("No se pudo conectar. Revisa tu conexión a internet.");
   }
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(friendlyError(res.status, data));
+  if (!res.ok) throw httpError(res.status, data);
 
   const text = (data.candidates?.[0]?.content?.parts || [])
     .filter((p) => typeof p.text === "string")
@@ -114,16 +153,16 @@ export async function analyzeFoodImage({
 
   if (!text) {
     const reason = data.promptFeedback?.blockReason;
-    throw new Error(
-      reason
-        ? `Gemini bloqueó la petición (${reason}).`
-        : "Gemini no devolvió ningún resultado."
-    );
+    if (reason) throw new GeminiError(`Gemini bloqueó la petición (${reason}).`);
+    throw new GeminiError("Gemini no devolvió ningún resultado.", { fallback: true });
   }
 
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error("La respuesta de Gemini no tenía el formato esperado. Inténtalo de nuevo.");
+    throw new GeminiError(
+      "La respuesta de Gemini no tenía el formato esperado. Inténtalo de nuevo.",
+      { fallback: true }
+    );
   }
 }

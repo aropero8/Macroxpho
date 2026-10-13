@@ -1,30 +1,23 @@
 import { useRef, useState } from "react";
 import { saveTextFile } from "../lib/backupFile.js";
 import { dateKey } from "../lib/date.js";
-import { FREE_MODELS, isFreeModel } from "../lib/models.js";
+import { MODEL_CHAIN, modelLabel } from "../lib/models.js";
 import {
   exportBackup,
-  getApiConfig,
   getSettings,
   importBackup,
   inspectBackup,
 } from "../lib/storage.js";
 import { useConfirm } from "./ConfirmDialog.jsx";
 
-export default function Settings({ apiKey, model, defaultModel, settings, onSave, onClose, onImported }) {
+export default function Settings({ apiKey, settings, onSave, onClose, onImported }) {
   const [key, setKey] = useState(apiKey);
-  const [mdl, setMdl] = useState(model);
   const [protein, setProtein] = useState(String(settings.proteinGoal));
   const [kcal, setKcal] = useState(settings.kcalGoal ? String(settings.kcalGoal) : "");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const importRef = useRef(null);
   const [confirm, dialog] = useConfirm();
-  // Modelo guardado antes de existir el desplegable que no es gratuito (se avisa y se sustituye).
-  const [replacedModel] = useState(() => {
-    const stored = getApiConfig().model;
-    return stored && !isFreeModel(stored) ? stored : null;
-  });
 
   function save() {
     const proteinGoal = Math.round(Number(protein));
@@ -33,7 +26,7 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
     if (kcalGoal !== null && !(kcalGoal > 0))
       return setError("El objetivo de kcal debe ser un número mayor que 0, o dejarlo vacío.");
     try {
-      onSave({ apiKey: key.trim(), model: mdl, proteinGoal, kcalGoal });
+      onSave({ apiKey: key.trim(), proteinGoal, kcalGoal });
     } catch {
       setError("No se pudieron guardar los ajustes.");
     }
@@ -126,31 +119,18 @@ export default function Settings({ apiKey, model, defaultModel, settings, onSave
           </small>
         </label>
 
-        <label className="field">
-          <span>Modelo (solo gratuitos)</span>
-          <select value={mdl} onChange={(e) => setMdl(e.target.value)}>
-            {FREE_MODELS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-                {m.id === defaultModel ? " · por defecto" : ""}
-              </option>
-            ))}
-          </select>
+        <div className="field">
+          <span>Modelo: automático</span>
           <small>
-            {FREE_MODELS.find((m) => m.id === mdl)?.note} Todos tienen capa gratuita y aceptan
-            fotos.{" "}
+            Se usa {modelLabel(MODEL_CHAIN[0])} y, si falla (límite agotado, modelo retirado,
+            Google saturado…), se prueba solo el siguiente gratuito:{" "}
+            {MODEL_CHAIN.slice(1).map(modelLabel).join(", ")}.{" "}
             <a href="https://aistudio.google.com/rate-limit" target="_blank" rel="noreferrer">
               Ver tus límites
             </a>
             .
           </small>
-          {replacedModel && (
-            <small className="warn">
-              Tenías guardado «{replacedModel}», que no está en la lista de gratuitos. Al guardar
-              se cambiará por el elegido aquí.
-            </small>
-          )}
-        </label>
+        </div>
 
         <div className="row">
           <button className="btn ghost" onClick={onClose}>
