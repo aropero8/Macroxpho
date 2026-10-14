@@ -17,6 +17,8 @@ Haces una foto (o eliges una de la galería), Gemini identifica los platos y est
 - **Día**: un anillo de proteína que se llena según comes, con los gramos en el centro y "Quedan 34 g de 144 g" debajo; es neutro al principio, verde al acercarte (desde el 60 %) y dorado al llegar. Debajo, kcal, carbohidratos y grasas, y los huecos de Desayuno, Comida, Cena y snacks. Con las flechas ‹ › o deslizando a los lados pasas al día anterior o siguiente.
 - **Objetivo conseguido**: al llegar a tu objetivo de proteína aparece "¡Objetivo de proteína conseguido! 💪" (con "+12 g" si te pasas). La primera vez de cada día lo acompañan una pequeña animación y una vibración corta; el mensaje se queda el resto del día. Los días pasados muestran solo el estado final, sin animación.
 - **Añadir comida**: haces una foto o eliges una de la galería, puedes añadir una nota ("200 g de arroz"), Gemini estima los platos y sus macros, corriges los gramos si hace falta (escribiéndolos o con − / + de 10 en 10) y la guardas en su hueco con una miniatura.
+- **Apuntar a mano** (botón «Apuntar a mano, sin foto» de Inicio, arriba del todo en Añadir comida, o desde el aviso cuando Gemini falla): escribes el plato y lo que sepas de él (ración, proteína, carbohidratos, grasas y kcal; si dejas las kcal vacías se calculan con los macros). No hace falta foto, ni API key, ni conexión. Si el plato ya lo apuntaste otro día, al escribir su nombre se rellenan los macros de aquella vez y, si cambias la ración, se recalculan. Se puede mezclar con lo que estime Gemini (por ejemplo, para añadir la bebida que no salía en la foto), y si hiciste foto se guarda como miniatura. Al ver una comida de hoy también puedes añadirle platos a mano.
+- **Analizar más tarde**: si Gemini no responde, puedes guardar la comida con su foto («Guardar y analizar cuando vuelva»). Queda en su hueco como «Pendiente de Gemini» y la app la reintenta sola mientras está abierta: al abrirla, cada 5 minutos, al volver a ella y al recuperar la conexión (o al momento con «Reintentar ahora»). Cuando Gemini responde, sus platos se suman a lo que hubieras apuntado a mano y aparece un aviso. Con la app cerrada no se analiza nada.
 - **¿Qué pido?** (menú ☰ o el botón de Inicio): haces fotos de hasta 6 opciones (cartas, menús del día o platos) y Gemini las compara en una sola llamada: puntúa cada opción de 0 a 10 según la proteína y las kcal que te quedan hoy y tus preferencias ("sin cerdo", "algo ligero"), recomienda la mejor y explica por qué. En los menús del día elige la mejor combinación de primero y segundo. Puedes elegir otra opción, ajustar los gramos y apuntarla en su hueco. Las fotos se envían a 1600 px (en vez de 1024) para que se lea la letra de las cartas.
 - **Corregir o borrar**: el día de hoy puedes abrir una comida para ajustar gramos o borrarla; al borrar aparece **Deshacer** durante unos segundos. Los días pasados son de solo lectura.
 - **Calendario** (menú ☰): marca los días con comidas y permite abrir cualquier día pasado.
@@ -107,16 +109,17 @@ Todo se queda en el dispositivo; a Google solo se envían la foto y la nota cuan
 | Último día en que se celebró el objetivo | `localStorage` → `macrosnap.celebrated` |
 | API key | `localStorage` → `macrosnap.apiKey` |
 | Miniaturas | IndexedDB → base `macrosnap`, almacén `thumbs` (JPEG de 200 px, calidad 0.6). Si IndexedDB falla, la app sigue funcionando sin miniaturas. |
+| Fotos pendientes de analizar | IndexedDB → base `macrosnap`, almacén `photos` (la foto a 1024 px y la nota). Se borran al analizarse o al borrar la comida. Las comidas llevan `pendiente: true` mientras tanto. |
 
 - Cada día se guarda con la clave `YYYY-MM-DD` calculada con la **hora local** del dispositivo (nunca UTC), y "hoy" se recalcula si la app sigue abierta pasada la medianoche.
-- **Copia de seguridad**: incluye los días y los objetivos, pero **no** la API key ni las miniaturas. Importar una copia sustituye todos los datos del dispositivo (la app pide confirmación y dice cuántos días trae).
+- **Copia de seguridad**: incluye los días y los objetivos, pero **no** la API key, las miniaturas ni las fotos pendientes (una comida pendiente importada en otro dispositivo se cierra sin analizar). Importar una copia sustituye todos los datos del dispositivo (la app pide confirmación y dice cuántos días trae).
 - Los informes comparan cada día con el objetivo de proteína **actual**: si lo cambias, los días anteriores se evalúan con el nuevo valor.
 - Si desinstalas la app o borras los datos del navegador, se pierde el diario: exporta copias de vez en cuando.
 
 ## Modelo y capa gratuita
 
 - **El modelo se elige solo.** La app usa siempre modelos con capa gratuita que aceptan fotos: primero `gemini-3.5-flash` (el de por defecto) y, si falla, prueba sin que hagas nada los siguientes en este orden: `gemini-3.8-flash`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash-lite` y `gemini-3.1-flash-lite` (Google lo retira el 7 de mayo de 2027). La lista está en `src/lib/models.js` y se revisó en octubre de 2026 con https://ai.google.dev/gemini-api/docs/pricing; si Google la cambia, basta con editar ese archivo.
-- Se pasa al siguiente modelo si el actual ha agotado su límite, no existe o se ha retirado, no tiene permiso, Google está saturado o la respuesta llega vacía o con un formato raro. Si el problema es la API key, la conexión o que Google bloquea la foto, cambiar de modelo no ayuda y la app avisa directamente.
+- Se pasa al siguiente modelo si el actual ha agotado su límite, no existe o se ha retirado, no tiene permiso, Google está saturado o la respuesta llega vacía o con un formato raro. Si el problema es la API key, la conexión o que Google bloquea la foto, cambiar de modelo no ayuda y la app avisa directamente. En ambos casos el aviso ofrece apuntar la comida a mano, y lo que ya hayas apuntado a mano no se pierde al reintentar.
 - `VITE_GEMINI_MODEL` cambia cuál se prueba primero; si apunta a uno que no está en la lista, se ignora.
 - Fuera de la lista quedan los 2.5 (no tienen fecha de retirada, pero Google limita el acceso a quien ya los usaba: https://ai.google.dev/gemini-api/docs/deprecations), los preview y los modelos de voz, imagen o embeddings.
 - En la capa gratuita Google puede usar los datos enviados para mejorar sus modelos y no está pensada para uso comercial.
@@ -145,6 +148,7 @@ src/
     MealSlot.jsx             hueco de una comida (vacío o con miniatura)
     ProteinRing.jsx          anillo de proteína, mensaje y celebración del objetivo
     AddMeal.jsx              analizador de fotos + guardar en el hueco
+    ManualDish.jsx           apuntar un plato a mano (sin Gemini), con autorrelleno
     MealView.jsx             detalle de una comida (corregir o borrar)
     Results.jsx              platos, totales y edición de gramos
     SideMenu.jsx             menú lateral ☰
@@ -155,11 +159,12 @@ src/
     ConfirmDialog.jsx        diálogo de confirmación (useConfirm)
     Thumb.jsx                miniatura desde IndexedDB
   lib/
+    pending.js               comidas cuya foto espera a Gemini y su reintento automático
     gemini.js                cliente REST de Gemini + esquema JSON + cambio automático de modelo
     models.js                lista de modelos gratuitos y orden en que se prueban
     image.js                 redimensionado de la foto y miniaturas
     storage.js               acceso a datos (localStorage) y copia de seguridad
-    thumbs.js                miniaturas en IndexedDB
+    thumbs.js                miniaturas y fotos pendientes en IndexedDB
     nutrition.js             cálculo de totales
     reports.js               cálculos de los informes
     date.js                  fechas en hora local

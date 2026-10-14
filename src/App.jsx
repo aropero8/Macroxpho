@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { exitApp, useBackButton } from "./lib/backButton.js";
 import { addDays, dateKey } from "./lib/date.js";
 import { round } from "./lib/nutrition.js";
+import { processPending, RETRY_MS } from "./lib/pending.js";
 import { currentPeriod } from "./lib/reports.js";
 import {
+  findMeal,
   getApiConfig,
   getSettings,
   MEAL_LABELS,
@@ -11,7 +13,7 @@ import {
   saveApiConfig,
   saveSettings,
 } from "./lib/storage.js";
-import { deleteThumb } from "./lib/thumbs.js";
+import { deletePhoto, deleteThumb } from "./lib/thumbs.js";
 import AddMeal from "./components/AddMeal.jsx";
 import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
@@ -34,7 +36,7 @@ const DELETED = {
 // Navegación sin router: `screen` describe la pantalla actual.
 //   { name: "home" }
 //   { name: "day", date }
-//   { name: "addMeal", date, tipo }
+//   { name: "addMeal", date, tipo, manual? }   manual: abre directamente "Apuntar a mano"
 //   { name: "meal", date, mealId }
 //   { name: "menu" }       recomendador de menús ("¿Qué pido?")
 //   { name: "settings" }
@@ -70,6 +72,37 @@ export default function App() {
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const [showToast, toastView] = useToast();
 
+  // Fotos que esperan a Gemini (pending.js): se reintentan al abrir la app, cada pocos
+  // minutos, al volver a ella y al recuperar la conexión. Al cerrarse alguna, se avisa y
+  // se vuelve a pintar la pantalla con los datos nuevos.
+  const [dataVersion, setDataVersion] = useState(0);
+  const checkPending = useCallback(async () => {
+    const done = await processPending(apiKey);
+    if (!done.length) return done;
+    setDataVersion((v) => v + 1);
+    const protein = round(done.reduce((acc, d) => acc + d.meal.totales.proteina_g, 0));
+    showToast({
+      message:
+        done.length === 1
+          ? `Gemini ha analizado tu ${MEAL_LABELS[done[0].meal.tipo].toLowerCase()} · ${protein} g de proteína`
+          : `Gemini ha analizado ${done.length} comidas pendientes · ${protein} g de proteína`,
+    });
+    return done;
+  }, [apiKey, showToast]);
+
+  useEffect(() => {
+    checkPending();
+    const id = setInterval(checkPending, RETRY_MS);
+    const onVisible = () => document.visibilityState === "visible" && checkPending();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("online", checkPending);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("online", checkPending);
+    };
+  }, [checkPending]);
+
   function go(next, dir = "none") {
     setScreen(next);
     setNavDir(dir);
@@ -99,7 +132,9 @@ export default function App() {
   function onMealSaved(meal) {
     back();
     showToast({
-      message: `Guardado en ${MEAL_LABELS[meal.tipo].toLowerCase()} · ${round(meal.totales.proteina_g)} g de proteína`,
+      message: meal.pendiente
+        ? `Guardado en ${MEAL_LABELS[meal.tipo].toLowerCase()} · se analizará cuando Gemini vuelva`
+        : `Guardado en ${MEAL_LABELS[meal.tipo].toLowerCase()} · ${round(meal.totales.proteina_g)} g de proteína`,
     });
   }
 
@@ -110,7 +145,10 @@ export default function App() {
     showToast({
       message: DELETED[meal.tipo],
       action: { label: "Deshacer", run: () => restoreMeal(date, meal) },
-      onExpire: () => deleteThumb(meal.thumbId),
+      onExpire: () => {
+        deleteThumb(meal.thumbId);
+        deletePhoto(meal.id); // la de una comida pendiente; si no hay, no hace nada
+      },
     });
   }
 
@@ -146,6 +184,7 @@ export default function App() {
             date={screen.date}
             tipo={screen.tipo}
             apiKey={apiKey}
+            startManual={screen.manual}
             onSaved={onMealSaved}
             onOpenSettings={() => child({ name: "settings" })}
           />
@@ -161,10 +200,12 @@ export default function App() {
     case "meal":
       content = (
         <MealView
-          key={screen.mealId}
+          // Una comida pendiente se vuelve a montar cuando Gemini la analiza.
+          key={findMeal(screen.date, screen.mealId)?.pendiente ? `${screen.mealId}-${dataVersion}` : screen.mealId}
           date={screen.date}
           mealId={screen.mealId}
           readOnly={screen.date !== today}
+          onRetry={checkPending}
           onDone={back}
           onSaved={() => {
             back();
@@ -217,7 +258,7 @@ export default function App() {
           hasApiKey={Boolean(apiKey)}
           onOpenToday={() => child({ name: "day", date: today })}
           onOpenDay={(date) => child({ name: "day", date })}
-          onAddMeal={(tipo) => child({ name: "addMeal", date: today, tipo })}
+          onAddMeal={(tipo, manual) => child({ name: "addMeal", date: today, tipo, manual })}
           onOpenMenu={() => child({ name: "menu" })}
           onOpenSettings={() => child({ name: "settings" })}
         />

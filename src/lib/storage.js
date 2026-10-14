@@ -3,7 +3,9 @@
 //
 // Formato guardado en DATA_KEY:
 //   { version: 1, days: { "YYYY-MM-DD": { desayuno, comida, cena, snacks: [] } } }
-import { mealsOf, sumTotals } from "./nutrition.js";
+// Una comida con `pendiente: true` tiene su foto guardada (thumbs.js) a la espera de que
+// Gemini la analice (pending.js); mientras tanto solo cuenta lo apuntado a mano.
+import { mealsOf, scaled, sumTotals } from "./nutrition.js";
 
 const DATA_KEY = "macrosnap.data";
 const SETTINGS_KEY = "macrosnap.settings";
@@ -112,6 +114,34 @@ export function listDaysWithData() {
 
 export function findMeal(key, id) {
   return mealsOf(getDay(key)).find((m) => m.id === id) || null;
+}
+
+/**
+ * Platos ya apuntados, uno por nombre (la última vez que se comió), del más reciente al
+ * más antiguo. Los macros son los de esa ración. Sirven para apuntar a mano sin Gemini.
+ */
+export function recentDishes() {
+  const seen = new Map();
+  for (const key of Object.keys(load().days).sort().reverse()) {
+    const meals = mealsOf(getDay(key)).sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
+    for (const meal of meals) {
+      for (const p of meal.platos) {
+        const nombre = p.nombre?.trim();
+        if (!nombre || seen.has(nombre.toLowerCase())) continue;
+        seen.set(nombre.toLowerCase(), { nombre, gramos: p.gramos, ...scaled(p), date: key });
+      }
+    }
+  }
+  return [...seen.values()];
+}
+
+/** Comidas cuya foto espera a que Gemini vuelva (pendiente: true), de la más antigua a la más nueva. */
+export function listPending() {
+  const out = [];
+  for (const key of Object.keys(load().days).sort()) {
+    for (const meal of mealsOf(getDay(key))) if (meal.pendiente) out.push({ date: key, meal });
+  }
+  return out;
 }
 
 /**

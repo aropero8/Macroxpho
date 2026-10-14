@@ -124,6 +124,10 @@ export default function Home({
           <Icon name="plus" />
           Añadir comida
         </button>
+        <button className="btn" onClick={() => onAddMeal(target, true)}>
+          <Icon name="edit" />
+          Apuntar a mano, sin foto
+        </button>
         <button className="btn ghost" onClick={onOpenMenu}>
           <Icon name="sparkle" />
           ¿Dudas qué pedir? Compara menús
