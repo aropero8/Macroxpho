@@ -197,6 +197,10 @@ h2 {
   color: var(--muted);
 }
 
+.hint.warn {
+  color: var(--warn);
+}
+
 .center {
   text-align: center;
 }
@@ -1179,6 +1183,10 @@ button.slot.empty:active {
   font-variant-numeric: tabular-nums;
 }
 
+.slot-info small.pending {
+  color: var(--warn);
+}
+
 .chevron {
   width: 20px;
   height: 20px;
@@ -1358,6 +1366,42 @@ button.slot.empty:active {
   to {
     background-position: 0 0;
   }
+}
+
+/* Apuntar a mano: plato y ración arriba, macros en dos columnas */
+.manual {
+  gap: var(--space-3);
+  animation: fade-in var(--dur) ease;
+}
+
+.manual-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: -10px -10px -4px 0; /* el botón de cerrar no añade altura a la cabecera */
+}
+
+.manual-head h3 {
+  font-size: var(--fs-lg);
+}
+
+.manual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.manual-grid .field {
+  min-width: 0;
+}
+
+.manual-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.manual-grid input {
+  width: 100%;
+  min-width: 0;
 }
 
 /* ---------- Resultado del análisis ---------- */

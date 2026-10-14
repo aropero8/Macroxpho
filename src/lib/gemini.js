@@ -51,11 +51,13 @@ const SCHEMA = {
 // Error de un intento. `fallback` indica si merece la pena probar con otro modelo
 // (límite agotado, modelo retirado o sin permiso, Google saturado, respuesta rara…).
 // Con la API key mal, sin conexión o con la petición bloqueada, cambiar de modelo no ayuda.
+// `blocked`: Google rechaza esa foto en concreto; reintentarla más tarde tampoco ayuda.
 class GeminiError extends Error {
-  constructor(message, { fallback = false, status } = {}) {
+  constructor(message, { fallback = false, status, blocked = false } = {}) {
     super(message);
     this.fallback = fallback;
     this.status = status;
+    this.blocked = blocked;
   }
 }
 
@@ -153,7 +155,7 @@ async function callModel({ apiKey, model, parts, schema }) {
 
   if (!text) {
     const reason = data.promptFeedback?.blockReason;
-    if (reason) throw new GeminiError(`Gemini bloqueó la petición (${reason}).`);
+    if (reason) throw new GeminiError(`Gemini bloqueó la petición (${reason}).`, { blocked: true });
     throw new GeminiError("Gemini no devolvió ningún resultado.", { fallback: true });
   }
 

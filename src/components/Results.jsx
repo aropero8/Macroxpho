@@ -45,7 +45,8 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
                 )}
               </div>
               <div className="dish-body">
-                {readOnly ? (
+                {/* Un plato apuntado a mano sin ración no tiene gramos que ajustar */}
+                {!(d.gramosBase > 0) ? null : readOnly ? (
                   <span className="grams">{round(d.gramos)} g</span>
                 ) : (
                   <span className="grams stepper">

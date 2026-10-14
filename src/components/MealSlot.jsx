@@ -18,10 +18,13 @@ export default function MealSlot({ meal, readOnly, onAdd, onOpen }) {
     <button className="slot filled" onClick={() => onOpen(meal)}>
       <Thumb id={meal.thumbId} />
       <span className="slot-info">
-        <strong>{mealName(meal)}</strong>
-        <small>
-          {round(meal.totales.kcal)} kcal · {round(meal.totales.proteina_g)} g proteína
-        </small>
+        <strong>{mealName(meal) || "Foto sin analizar"}</strong>
+        {meal.pendiente && <small className="pending">Pendiente de Gemini</small>}
+        {meal.platos.length > 0 && (
+          <small>
+            {round(meal.totales.kcal)} kcal · {round(meal.totales.proteina_g)} g proteína
+          </small>
+        )}
       </span>
       <Icon name="next" className="chevron" />
     </button>
