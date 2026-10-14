@@ -36,7 +36,7 @@ const DELETED = {
 // Navegación sin router: `screen` describe la pantalla actual.
 //   { name: "home" }
 //   { name: "day", date }
-//   { name: "addMeal", date, tipo }
+//   { name: "addMeal", date, tipo, manual? }   manual: abre directamente "Apuntar a mano"
 //   { name: "meal", date, mealId }
 //   { name: "menu" }       recomendador de menús ("¿Qué pido?")
 //   { name: "settings" }
@@ -184,6 +184,7 @@ export default function App() {
             date={screen.date}
             tipo={screen.tipo}
             apiKey={apiKey}
+            startManual={screen.manual}
             onSaved={onMealSaved}
             onOpenSettings={() => child({ name: "settings" })}
           />
@@ -257,7 +258,7 @@ export default function App() {
           hasApiKey={Boolean(apiKey)}
           onOpenToday={() => child({ name: "day", date: today })}
           onOpenDay={(date) => child({ name: "day", date })}
-          onAddMeal={(tipo) => child({ name: "addMeal", date: today, tipo })}
+          onAddMeal={(tipo, manual) => child({ name: "addMeal", date: today, tipo, manual })}
           onOpenMenu={() => child({ name: "menu" })}
           onOpenSettings={() => child({ name: "settings" })}
         />

@@ -29,7 +29,7 @@ function ResultsSkeleton() {
 // Analizador de fotos (el de siempre) + guardar el resultado en su hueco del día.
 // Los platos también se pueden apuntar a mano (sin foto ni Gemini), solos o junto a los
 // de la foto: así, si Gemini falla, la comida no se queda sin apuntar.
-export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings }) {
+export default function AddMeal({ date, tipo, apiKey, startManual, onSaved, onOpenSettings }) {
   const [image, setImage] = useState(null); // { previewUrl, base64, mimeType, file }
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings })
   const [aiFailed, setAiFailed] = useState(false); // el error es de Gemini: ofrecer apuntar a mano
   const [dishes, setDishes] = useState([]); // de Gemini y apuntados a mano (manual: true)
   const [estimate, setEstimate] = useState(null); // { confianza, notas } de Gemini
-  const [manual, setManual] = useState(false); // formulario de apuntar a mano abierto
+  const [manual, setManual] = useState(Boolean(startManual)); // formulario de apuntar a mano abierto
 
   const cameraRef = useRef(null);
   const galleryRef = useRef(null);
@@ -159,6 +159,77 @@ export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings })
 
   const removeDish = (i) => setDishes((ds) => ds.filter((_, idx) => idx !== i));
 
+  const photoCard = (
+    <div className="card">
+      {image ? (
+        <div className={loading ? "photo scanning" : "photo"}>
+          <img className="preview" src={image.previewUrl} alt="Comida a analizar" />
+        </div>
+      ) : (
+        <button className="placeholder" onClick={() => cameraRef.current?.click()}>
+          <Icon name="camera" />
+          <span>Haz una foto a tu comida</span>
+          <small>o elige una de la galería</small>
+        </button>
+      )}
+
+      <div className="row">
+        <button className="btn" disabled={loading} onClick={() => cameraRef.current?.click()}>
+          <Icon name="camera" />
+          Cámara
+        </button>
+        <button className="btn" disabled={loading} onClick={() => galleryRef.current?.click()}>
+          <Icon name="image" />
+          Galería
+        </button>
+      </div>
+
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        hidden
+        onChange={onFile}
+      />
+      <input ref={galleryRef} type="file" accept="image/*" hidden onChange={onFile} />
+
+      <label className="field">
+        <span>Nota (opcional)</span>
+        <input
+          type="text"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Ej: 200 g de arroz, con aceite de oliva"
+        />
+      </label>
+
+      <button
+        className="btn primary full"
+        disabled={!image || !apiKey || loading || saving}
+        onClick={analyze}
+      >
+        {loading ? "Analizando…" : "Analizar macros"}
+      </button>
+    </div>
+  );
+
+  // Lo apuntado y el botón de guardar, justo debajo de donde se está escribiendo.
+  const results = dishes.length > 0 && (
+    <>
+      <Results
+        dishes={dishes}
+        confianza={confianza}
+        notas={notas}
+        onGramsChange={updateGrams}
+        onRemove={removeDish}
+      />
+      <button className="btn primary full" disabled={saving} onClick={saveResult}>
+        {saving ? "Guardando…" : `Guardar en ${MEAL_LABELS[tipo].toLowerCase()}`}
+      </button>
+    </>
+  );
+
   return (
     <>
       <h2 className="screen-title">Añadir {MEAL_LABELS[tipo].toLowerCase()}</h2>
@@ -173,59 +244,7 @@ export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings })
         </div>
       )}
 
-      <div className="card">
-        {image ? (
-          <div className={loading ? "photo scanning" : "photo"}>
-            <img className="preview" src={image.previewUrl} alt="Comida a analizar" />
-          </div>
-        ) : (
-          <button className="placeholder" onClick={() => cameraRef.current?.click()}>
-            <Icon name="camera" />
-            <span>Haz una foto a tu comida</span>
-            <small>o elige una de la galería</small>
-          </button>
-        )}
-
-        <div className="row">
-          <button className="btn" disabled={loading} onClick={() => cameraRef.current?.click()}>
-            <Icon name="camera" />
-            Cámara
-          </button>
-          <button className="btn" disabled={loading} onClick={() => galleryRef.current?.click()}>
-            <Icon name="image" />
-            Galería
-          </button>
-        </div>
-
-        <input
-          ref={cameraRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          hidden
-          onChange={onFile}
-        />
-        <input ref={galleryRef} type="file" accept="image/*" hidden onChange={onFile} />
-
-        <label className="field">
-          <span>Nota (opcional)</span>
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ej: 200 g de arroz, con aceite de oliva"
-          />
-        </label>
-
-        <button
-          className="btn primary full"
-          disabled={!image || !apiKey || loading || saving}
-          onClick={analyze}
-        >
-          {loading ? "Analizando…" : "Analizar macros"}
-        </button>
-      </div>
-
+      {/* Arriba del todo: es la salida cuando Gemini no funciona */}
       {manual ? (
         <ManualDish
           onAdd={(dish) => setDishes((ds) => [...ds, dish])}
@@ -237,6 +256,10 @@ export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings })
           Apuntar a mano, sin IA
         </button>
       )}
+
+      {manual && results}
+
+      {!manual && photoCard}
 
       {loading && <ResultsSkeleton />}
 
@@ -271,20 +294,9 @@ export default function AddMeal({ date, tipo, apiKey, onSaved, onOpenSettings })
         </div>
       )}
 
-      {dishes.length > 0 && (
-        <>
-          <Results
-            dishes={dishes}
-            confianza={confianza}
-            notas={notas}
-            onGramsChange={updateGrams}
-            onRemove={removeDish}
-          />
-          <button className="btn primary full" disabled={saving} onClick={saveResult}>
-            {saving ? "Guardando…" : `Guardar en ${MEAL_LABELS[tipo].toLowerCase()}`}
-          </button>
-        </>
-      )}
+      {!manual && results}
+
+      {manual && photoCard}
 
       {import.meta.env.DEV && (
         <button className="btn full dev" disabled={saving} onClick={saveSample}>
