@@ -34,6 +34,7 @@ function useSwipe(onPrev, onNext) {
 export default function DayView({
   date,
   isToday,
+  editable,
   settings,
   onAdd,
   onOpenMeal,
@@ -42,7 +43,7 @@ export default function DayView({
   onNextDay,
 }) {
   const day = getDay(date);
-  const readOnly = !isToday;
+  const readOnly = !editable;
   const isEmpty = mealsOf(day).length === 0;
   const t = dayTotals(day);
   const goal = settings.proteinGoal;
@@ -57,7 +58,9 @@ export default function DayView({
         {isToday ? (
           <p className="label">{formatLong(date)}</p>
         ) : (
-          <span className="badge">Día pasado · solo lectura</span>
+          <span className="badge">
+            {readOnly ? "Día pasado · solo lectura" : "Ayer · aún se puede editar"}
+          </span>
         )}
         <h2 className={isToday ? "display" : "display small"}>
           {isToday ? "Hoy" : formatLong(date)}
@@ -135,7 +138,7 @@ export default function DayView({
 
       {isEmpty && (
         <p className="hint center">
-          Aún no has apuntado nada hoy. Toca <strong>Añadir</strong> y haz una foto a tu comida.
+          Aún no has apuntado nada {isToday ? "hoy" : "este día"}. Toca <strong>Añadir</strong> y haz una foto a tu comida.
         </p>
       )}
 

@@ -1,12 +1,22 @@
 import { useState } from "react";
+import { dateKey } from "../lib/date.js";
 import { deleteMeal, findMeal, MEAL_LABELS, saveMeal } from "../lib/storage.js";
 import Icon from "./Icon.jsx";
 import ManualDish from "./ManualDish.jsx";
 import Results from "./Results.jsx";
 import Thumb from "./Thumb.jsx";
 
-// Detalle de una comida guardada. Hoy se pueden corregir gramos o borrarla;
-// los días pasados se muestran en solo lectura. Borrar no pide confirmación: quien llama
+// "Guardada a las 14:05", o con la fecha si se apuntó otro día (p. ej. la cena de ayer).
+function savedLabel(savedAt, date) {
+  const d = new Date(savedAt);
+  const time = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  if (dateKey(d) === date) return `Guardada a las ${time}`;
+  const day = d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  return `Guardada el ${day} a las ${time}`;
+}
+
+// Detalle de una comida guardada. Hoy y ayer se pueden corregir gramos o borrarla;
+// los días anteriores se muestran en solo lectura. Borrar no pide confirmación: quien llama
 // ofrece "Deshacer" (onDeleted) y la foto solo se borra si no se deshace.
 // Una comida pendiente espera a que Gemini analice su foto (pending.js); onRetry lo
 // intenta en el momento.
@@ -65,10 +75,7 @@ export default function MealView({ date, mealId, readOnly, onRetry, onDone, onSa
         <Thumb id={meal.thumbId} className="large" />
         <div>
           <h2>{MEAL_LABELS[meal.tipo]}</h2>
-          <small>
-            Guardada a las{" "}
-            {new Date(meal.savedAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-          </small>
+          <small>{savedLabel(meal.savedAt, date)}</small>
         </div>
       </div>
 
