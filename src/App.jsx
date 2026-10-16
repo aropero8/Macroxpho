@@ -53,6 +53,8 @@ export default function App() {
   const [navDir, setNavDir] = useState("none");
   const [now, setNow] = useState(() => new Date());
   const today = dateKey(now);
+  // Se puede editar hoy y ayer (por si se olvidó apuntar algo); lo anterior es de solo lectura.
+  const isEditable = (date) => date >= addDays(today, -1);
 
   // "Hoy" y el saludo se recalculan cada minuto y al volver a la app
   // (por ejemplo, si se queda abierta pasada la medianoche).
@@ -167,6 +169,7 @@ export default function App() {
         <DayView
           date={screen.date}
           isToday={screen.date === today}
+          editable={isEditable(screen.date)}
           settings={settings}
           onAdd={(tipo) => child({ name: "addMeal", date: screen.date, tipo })}
           onOpenMeal={(meal) => child({ name: "meal", date: screen.date, mealId: meal.id })}
@@ -177,9 +180,9 @@ export default function App() {
       );
       break;
     case "addMeal":
-      // Los días pasados son de solo lectura.
+      // Antes de ayer, solo lectura.
       content =
-        screen.date === today ? (
+        isEditable(screen.date) ? (
           <AddMeal
             date={screen.date}
             tipo={screen.tipo}
@@ -190,7 +193,7 @@ export default function App() {
           />
         ) : (
           <div className="card">
-            <p>Ya no es hoy: los días pasados no se pueden editar.</p>
+            <p>Este día ya no se puede editar: solo hoy y ayer.</p>
             <button className="btn" onClick={back}>
               Volver al día
             </button>
@@ -204,7 +207,7 @@ export default function App() {
           key={findMeal(screen.date, screen.mealId)?.pendiente ? `${screen.mealId}-${dataVersion}` : screen.mealId}
           date={screen.date}
           mealId={screen.mealId}
-          readOnly={screen.date !== today}
+          readOnly={!isEditable(screen.date)}
           onRetry={checkPending}
           onDone={back}
           onSaved={() => {
