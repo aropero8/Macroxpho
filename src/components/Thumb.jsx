@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getThumb } from "../lib/thumbs.js";
+import Icon from "./Icon.jsx";
 
 // Muestra la miniatura guardada en IndexedDB o, si no hay, un hueco con un icono.
 export default function Thumb({ id, className = "" }) {
@@ -24,7 +25,7 @@ export default function Thumb({ id, className = "" }) {
     <img className={`thumb ${className}`} src={url} alt="" />
   ) : (
     <span className={`thumb empty ${className}`} aria-hidden="true">
-      🍽️
+      <Icon name="plate" />
     </span>
   );
 }

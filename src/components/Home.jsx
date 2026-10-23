@@ -16,7 +16,6 @@ export default function Home({
   onOpenToday,
   onOpenDay,
   onAddMeal,
-  onOpenMenu,
   onOpenSettings,
 }) {
   const { hello, question } = greeting(now);
@@ -32,7 +31,15 @@ export default function Home({
   let note = "Aún no has apuntado nada hoy";
   // Mientras el anillo se llena, la línea queda reservada (sin saltos) y el mensaje
   // aparece con la celebración.
-  if (reached) note = celebration.pending ? "\u00a0" : "¡Objetivo de proteína conseguido!\u00a0💪";
+  if (reached)
+    note = celebration.pending ? (
+      "\u00a0"
+    ) : (
+      <>
+        ¡Objetivo de proteína conseguido!
+        <Icon name="trophy" />
+      </>
+    );
   else if (count > 0) note = `Quedan ${left} g de proteína`;
 
   // El hueco propuesto se puede cambiar; los huecos ya ocupados no se ofrecen.
@@ -120,18 +127,18 @@ export default function Home({
             );
           })}
         </div>
-        <button className="btn primary xl" onClick={() => onAddMeal(target)}>
-          <Icon name="plus" />
-          Añadir comida
-        </button>
-        <button className="btn" onClick={() => onAddMeal(target, true)}>
-          <Icon name="edit" />
-          Apuntar a mano, sin foto
-        </button>
-        <button className="btn ghost" onClick={onOpenMenu}>
-          <Icon name="sparkle" />
-          ¿Dudas qué pedir? Compara menús
-        </button>
+        {/* Una sola acción principal; "a mano" queda al lado, más discreta. Comparar
+            menús está en la barra inferior. */}
+        <div className="home-actions">
+          <button className="btn primary xl" onClick={() => onAddMeal(target)}>
+            <Icon name="camera" />
+            Hacer foto
+          </button>
+          <button className="btn xl" onClick={() => onAddMeal(target, true)}>
+            <Icon name="edit" />
+            A mano
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -45,6 +45,16 @@ const PATHS = {
     </>
   ),
   chart: <path d="M6 20V11M12 20V5M18 20v-7" />,
+  home: <path d="M4 11l8-6.5 8 6.5M6.5 9.5V19h11V9.5M10 19v-5h4v5" />,
+  trophy: (
+    <path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3.5M9 20h6l-.5-3.5h-5z" />
+  ),
+  plate: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4.5" />
+    </>
+  ),
   sparkle: (
     <>
       <path d="M11 4l1.8 4.7L17.5 10.5l-4.7 1.8L11 17l-1.8-4.7L4.5 10.5l4.7-1.8z" />
@@ -52,6 +62,29 @@ const PATHS = {
     </>
   ),
 };
+
+// El logo de MacroSnap, el mismo dibujo que el icono de la app: el anillo de proteína casi
+// cerrado (violeta) con el centro dorado del objetivo. Lleva sus propios colores.
+export function Logo({ className = "" }) {
+  return (
+    <svg className={`logo-mark ${className}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="logo-ring" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#aea3ff" />
+          <stop offset="1" stopColor="#6a55f0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 4A8 8 0 1 1 5.07 8"
+        fill="none"
+        stroke="url(#logo-ring)"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="12" r="2.8" fill="#fbbf24" />
+    </svg>
+  );
+}
 
 export default function Icon({ name, className = "" }) {
   return (

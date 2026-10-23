@@ -1,6 +1,6 @@
 // Botón Atrás de Android (solo en la app nativa; en el navegador no hace nada).
 //
-// Las capas abiertas (menú lateral, diálogos) se apilan: Atrás cierra la de arriba.
+// Las capas abiertas (diálogos) se apilan: Atrás cierra la de arriba.
 // Si no hay ninguna, se llama al manejador de la pantalla (volver atrás, o salir desde Hoy).
 import { useEffect, useRef } from "react";
 import { App } from "@capacitor/app";

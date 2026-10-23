@@ -88,7 +88,9 @@ export default function DayView({
       <div className="swipe-area" {...swipe}>
         {title}
         <div className="card empty-state">
-          <span aria-hidden="true">📭</span>
+          <span className="empty-icon">
+            <Icon name="plate" />
+          </span>
           <p>No registraste comidas este día.</p>
           <button className="btn" onClick={onOpenToday}>
             Ir a hoy
