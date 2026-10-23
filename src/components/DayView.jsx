@@ -3,6 +3,7 @@ import { formatLong } from "../lib/date.js";
 import { dayTotals, mealsOf, round } from "../lib/nutrition.js";
 import { getDay, MEAL_LABELS, SLOTS } from "../lib/storage.js";
 import Icon from "./Icon.jsx";
+import { ExtraNutrients, MacroSplit } from "./MacroDetail.jsx";
 import MealSlot from "./MealSlot.jsx";
 import ProteinRing, { GoalMessage, useGoalCelebration } from "./ProteinRing.jsx";
 
@@ -136,6 +137,8 @@ export default function DayView({
             <span className="label">Grasas</span>
           </div>
         </div>
+        <MacroSplit totals={t} />
+        <ExtraNutrients totals={t} />
       </div>
 
       {isEmpty && (

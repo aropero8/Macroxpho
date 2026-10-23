@@ -15,7 +15,8 @@ la carta de un restaurante o un menú del día (primeros, segundos y postres).
    - Menú del día: la mejor combinación de primero + segundo de ese menú (y postre solo si mejora la elección).
    En total, como mucho 8 opciones.
 2. Para cada opción, desglosa sus platos con una ración típica de restaurante en gramos
-   y sus kcal, proteína, carbohidratos y grasas (kcal ≈ 4·proteína + 4·carbohidratos + 9·grasas).
+   y sus kcal, proteína, carbohidratos y grasas (kcal ≈ 4·proteína + 4·carbohidratos + 9·grasas),
+   además de fibra, azúcares, grasas saturadas y sal en gramos.
 3. Puntúa cada opción de 0 a 10 según lo bien que encaja con el objetivo del usuario:
    prioriza llegar al objetivo de proteína sin pasarse de kcal, la calidad de los alimentos
    (proteína magra, verdura, poco frito y poca salsa) y lo saciante que es.
@@ -36,8 +37,23 @@ const PLATO = {
     proteina_g: { type: "NUMBER" },
     carbohidratos_g: { type: "NUMBER" },
     grasas_g: { type: "NUMBER" },
+    fibra_g: { type: "NUMBER" },
+    azucares_g: { type: "NUMBER" },
+    grasas_sat_g: { type: "NUMBER" },
+    sal_g: { type: "NUMBER" },
   },
-  required: ["nombre", "gramos", "kcal", "proteina_g", "carbohidratos_g", "grasas_g"],
+  required: [
+    "nombre",
+    "gramos",
+    "kcal",
+    "proteina_g",
+    "carbohidratos_g",
+    "grasas_g",
+    "fibra_g",
+    "azucares_g",
+    "grasas_sat_g",
+    "sal_g",
+  ],
 };
 
 const SCHEMA = {

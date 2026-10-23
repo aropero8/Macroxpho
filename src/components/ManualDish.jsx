@@ -1,11 +1,11 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { parseKey } from "../lib/date.js";
-import { round } from "../lib/nutrition.js";
+import { EXTRAS, round } from "../lib/nutrition.js";
 import { recentDishes } from "../lib/storage.js";
 import Icon from "./Icon.jsx";
 
-const MACROS = ["kcal", "proteina_g", "carbohidratos_g", "grasas_g"];
-const EMPTY = { nombre: "", gramos: "", kcal: "", proteina_g: "", carbohidratos_g: "", grasas_g: "" };
+const MACROS = ["kcal", "proteina_g", "carbohidratos_g", "grasas_g", ...EXTRAS.map((e) => e.key)];
+const EMPTY = Object.fromEntries(["nombre", "gramos", ...MACROS].map((k) => [k, ""]));
 
 // Acepta "12,5" y "12.5"; lo vacío o negativo cuenta como 0.
 const num = (s) => {
@@ -41,6 +41,8 @@ export default function ManualDish({ onAdd, onClose }) {
       proteina_g: show(d.proteina_g * f),
       carbohidratos_g: show(d.carbohidratos_g * f),
       grasas_g: show(d.grasas_g * f),
+      // Los nutrientes que no tenía aquel plato se quedan vacíos (sin dato), no a 0
+      ...Object.fromEntries(EXTRAS.map(({ key }) => [key, d[key] != null ? show(d[key] * f) : ""])),
     };
   }
 
@@ -87,6 +89,10 @@ export default function ManualDish({ onAdd, onClose }) {
       proteina_g: p,
       carbohidratos_g: c,
       grasas_g: fat,
+      // Solo los que se hayan escrito: vacío es "no lo sé", no 0
+      ...Object.fromEntries(
+        EXTRAS.filter(({ key }) => form[key].trim() !== "").map(({ key }) => [key, num(form[key])])
+      ),
       manual: true,
     });
     setForm(EMPTY);
@@ -155,6 +161,15 @@ export default function ManualDish({ onAdd, onClose }) {
           true
         )}
       </div>
+
+      <details className="manual-more" open={EXTRAS.some(({ key }) => form[key] !== "")}>
+        <summary>Fibra, azúcares, grasas saturadas y sal (opcional)</summary>
+        <div className="manual-grid">
+          {EXTRAS.map(({ key, label }) => (
+            <Fragment key={key}>{field(key, `${label} (g)`, "Opcional")}</Fragment>
+          ))}
+        </div>
+      </details>
 
       {ref && (
         <p className="hint">

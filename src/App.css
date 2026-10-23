@@ -49,6 +49,12 @@
   --series-kcal: #2fb5c4;
   --series-protein: var(--accent);
 
+  /* Reparto de kcal entre macros: proteína con el acento, carbohidratos en turquesa y
+     grasas en coral; se distinguen en tono y luminosidad */
+  --macro-protein: var(--accent);
+  --macro-carbs: #2fb5c4;
+  --macro-fat: #f08a6c;
+
   /* Tipografía: Outfit para títulos, cifras y botones; la del sistema para el texto */
   --font-display: "Outfit Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -1553,6 +1559,20 @@ button.slot.empty:active {
   grid-column: 1 / -1;
 }
 
+/* Nutrientes adicionales, plegados: casi nunca se saben */
+.manual-more summary {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-sm);
+  color: var(--accent-bright);
+  cursor: pointer;
+}
+
+.manual-more .manual-grid {
+  padding-bottom: var(--space-2);
+}
+
 .manual-grid input {
   width: 100%;
   min-width: 0;
@@ -1733,9 +1753,135 @@ button.slot.empty:active {
   cursor: default;
 }
 
+/* La línea corta de macros despliega el detalle del plato */
 .dish-macros {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 40px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
   font-size: var(--fs-sm);
   color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.dish-macros .chevron {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.dish-macros[aria-expanded="true"] {
+  color: var(--text-soft);
+}
+
+.dish-macros[aria-expanded="true"] .chevron {
+  transform: rotate(90deg);
+}
+
+.dish-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  animation: msg-pop var(--dur) var(--ease-out);
+}
+
+/* ---------- Reparto de kcal y nutrientes adicionales ---------- */
+
+.split {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.split-bar {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.split-bar span {
+  flex-basis: 0;
+  min-width: 4px;
+}
+
+.split .proteina { --c: var(--macro-protein); }
+.split .carbohidratos { --c: var(--macro-carbs); }
+.split .grasas { --c: var(--macro-fat); }
+
+.split-bar span {
+  background: var(--c);
+}
+
+.split-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  white-space: nowrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.split-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.split-legend li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+.split-legend strong {
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+/* Lista de nutrientes: nombre a la izquierda, gramos a la derecha */
+.extras {
+  width: 100%;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--fs-sm);
+  text-align: left;
+}
+
+.extras div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.extras dt {
+  color: var(--muted);
+}
+
+.extras dd {
+  margin: 0;
+  white-space: nowrap;
+  color: var(--text-soft);
   font-variant-numeric: tabular-nums;
 }
 
