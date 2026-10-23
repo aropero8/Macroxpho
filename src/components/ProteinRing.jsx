@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { successHaptic } from "../lib/haptics.js";
 import { round } from "../lib/nutrition.js";
 import { markGoalCelebrated, wasGoalCelebrated } from "../lib/storage.js";
+import Icon from "./Icon.jsx";
 
 // Anillo de proteína que se LLENA según lo consumido.
 //   · neutro al principio, acento a partir del 60 % y color de logro al llegar al objetivo
@@ -186,7 +187,7 @@ export function GoalMessage({ consumed, goal, celebrating }) {
   const over = round(consumed) - goal;
   return (
     <p className={celebrating ? "goal-msg celebrate" : "goal-msg"} role="status">
-      <strong>¡Objetivo de proteína conseguido!{"\u00a0"}💪</strong>
+      <strong>¡Objetivo de proteína conseguido!<Icon name="trophy" /></strong>
       {over > 0 && <span>+{over} g sobre el objetivo</span>}
     </p>
   );

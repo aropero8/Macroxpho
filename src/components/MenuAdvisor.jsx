@@ -277,7 +277,9 @@ export default function MenuAdvisor({ today, settings, apiKey, onSaved, onOpenSe
                     {photos[o.foto - 1] ? (
                       <img className="thumb" src={photos[o.foto - 1].previewUrl} alt="" />
                     ) : (
-                      <span className="thumb empty">🍽️</span>
+                      <span className="thumb empty">
+                        <Icon name="plate" />
+                      </span>
                     )}
                     <span className="option-info">
                       <strong>{o.nombre}</strong>

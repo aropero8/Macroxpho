@@ -7,22 +7,25 @@ import { currentPeriod } from "./lib/reports.js";
 import {
   findMeal,
   getApiConfig,
+  getDay,
   getSettings,
   MEAL_LABELS,
   restoreMeal,
   saveApiConfig,
   saveSettings,
+  suggestSlot,
 } from "./lib/storage.js";
 import { deletePhoto, deleteThumb } from "./lib/thumbs.js";
 import AddMeal from "./components/AddMeal.jsx";
+import CalendarView from "./components/CalendarView.jsx";
 import DayView from "./components/DayView.jsx";
 import Home from "./components/Home.jsx";
-import Icon from "./components/Icon.jsx";
+import Icon, { Logo } from "./components/Icon.jsx";
 import MealView from "./components/MealView.jsx";
 import MenuAdvisor from "./components/MenuAdvisor.jsx";
 import Reports from "./components/Reports.jsx";
 import Settings from "./components/Settings.jsx";
-import SideMenu from "./components/SideMenu.jsx";
+import TabBar from "./components/TabBar.jsx";
 import { useToast } from "./components/Toast.jsx";
 import "./App.css";
 
@@ -33,8 +36,21 @@ const DELETED = {
   snack: "Snack borrado",
 };
 
+// Secciones de la barra inferior. Las pantallas de detalle que se abren desde ellas (un
+// día) la conservan; las de edición (añadir, ver una comida, ajustes) la ocultan.
+const TABS = ["home", "calendar", "reports", "menu"];
+const WITH_TABBAR = new Set([...TABS, "day"]);
+
+// La sección a la que pertenece una pantalla: la de la primera de su cadena de `parent`.
+function tabOf(screen) {
+  let s = screen;
+  while (s.parent) s = s.parent;
+  return TABS.includes(s.name) ? s.name : "home";
+}
+
 // Navegación sin router: `screen` describe la pantalla actual.
 //   { name: "home" }
+//   { name: "calendar" }
 //   { name: "day", date }
 //   { name: "addMeal", date, tipo, manual? }   manual: abre directamente "Apuntar a mano"
 //   { name: "meal", date, mealId }
@@ -70,8 +86,6 @@ export default function App() {
     };
   }, []);
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
   const [showToast, toastView] = useToast();
 
   // Fotos que esperan a Gemini (pending.js): se reintentan al abrir la app, cada pocos
@@ -108,14 +122,19 @@ export default function App() {
   function go(next, dir = "none") {
     setScreen(next);
     setNavDir(dir);
-    setMenuOpen(false);
     window.scrollTo(0, 0);
   }
 
   const openDay = (date) => go({ name: "day", date });
   const child = (next) => go({ ...next, parent: screen }, "forward");
-  const openReports = () =>
-    go({ name: "reports", mode: "week", anchor: currentPeriod("week", today) });
+
+  function openTab(tab) {
+    if (tab === "reports") go({ name: "reports", mode: "week", anchor: currentPeriod("week", today) });
+    else go({ name: tab });
+  }
+
+  // Botón de cámara: añade a hoy, en el hueco que toca por la hora, y vuelve a donde se estaba.
+  const quickAdd = () => child({ name: "addMeal", date: today, tipo: suggestSlot(now, getDay(today)) });
 
   // Cambiar de día desde el propio día: conserva la pantalla a la que vuelve "‹".
   const shiftDay = (n) =>
@@ -164,6 +183,11 @@ export default function App() {
 
   let content;
   switch (screen.name) {
+    case "calendar":
+      content = (
+        <CalendarView today={today} settings={settings} onOpenDay={(date) => child({ name: "day", date })} />
+      );
+      break;
     case "day":
       content = (
         <DayView
@@ -262,7 +286,6 @@ export default function App() {
           onOpenToday={() => child({ name: "day", date: today })}
           onOpenDay={(date) => child({ name: "day", date })}
           onAddMeal={(tipo, manual) => child({ name: "addMeal", date: today, tipo, manual })}
-          onOpenMenu={() => child({ name: "menu" })}
           onOpenSettings={() => child({ name: "settings" })}
         />
       );
@@ -271,27 +294,25 @@ export default function App() {
   // Cambiar de pantalla monta un <main> nuevo y lanza su animación de entrada. Cambiar
   // de periodo en Informes no cuenta como pantalla nueva.
   const screenKey = [screen.name, screen.date, screen.tipo, screen.mealId].join("|");
+  const hasTabs = WITH_TABBAR.has(screen.name);
+  // Las secciones de la barra no llevan "‹": se cambia de una a otra con la propia barra.
+  const showBack = !TABS.includes(screen.name) || Boolean(screen.parent);
 
   return (
-    <div className="app">
+    <div className={hasTabs ? "app has-tabs" : "app"}>
       <header>
         <div className="header-side">
-          <button
-            className="icon"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Abrir menú"
-            aria-expanded={menuOpen}
-          >
-            <Icon name="menu" />
-          </button>
-          {screen.name !== "home" && (
+          {showBack && (
             <button className="icon" onClick={back} aria-label="Volver">
               <Icon name="back" />
             </button>
           )}
         </div>
         <h1 className="wordmark">
-          Macro<span>Snap</span>
+          <Logo />
+          <span>
+            Macro<em>Snap</em>
+          </span>
         </h1>
         <div className="header-side right">
           <button
@@ -311,17 +332,7 @@ export default function App() {
 
       {toastView}
 
-      {menuOpen && (
-        <SideMenu
-          today={today}
-          selected={screen.date}
-          onSelectDay={openDay}
-          onToday={() => openDay(today)}
-          onReports={openReports}
-          onMenu={() => go({ name: "menu" })}
-          onClose={closeMenu}
-        />
-      )}
+      {hasTabs && <TabBar active={tabOf(screen)} onSelect={openTab} onCamera={quickAdd} />}
     </div>
   );
 }

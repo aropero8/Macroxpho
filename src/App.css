@@ -1,35 +1,39 @@
 /* ---------- Sistema de diseño ----------
    Todo color, tamaño, espaciado, radio, sombra y duración sale de aquí. */
 :root {
-  /* Superficies, de más hundida a más elevada */
-  --bg: #0b1120;
-  --surface-sunken: #0e1527; /* campos de texto y pistas de progreso */
-  --surface: #131b2e; /* tarjetas */
-  --surface-raised: #1b2540; /* botones secundarios y elementos sobre una tarjeta */
-  --surface-pressed: #232f4d;
-  --border: rgba(148, 163, 184, 0.13);
-  --border-strong: rgba(148, 163, 184, 0.26);
-  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 55%);
+  /* Superficies, de más hundida a más elevada: tinta casi negra con un punto violeta */
+  --bg: #0d0c12;
+  --bg-glass: rgba(13, 12, 18, 0.84); /* cabecera y barra inferior, sobre el contenido */
+  --surface-sunken: #121119; /* campos de texto y pistas de progreso */
+  --surface: #18171f; /* tarjetas */
+  --surface-raised: #222030; /* botones secundarios y elementos sobre una tarjeta */
+  --surface-pressed: #2b2940;
+  --border: rgba(196, 190, 230, 0.1);
+  --border-strong: rgba(196, 190, 230, 0.22);
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 55%);
 
   /* Texto */
-  --text: #f1f5f9;
-  --text-soft: #cbd5e1;
-  --muted: #94a3b8;
-  --faint: #64748b; /* solo decorativo o desactivado: no llega al contraste de texto */
+  --text: #f4f2fa;
+  --text-soft: #d3cfe2;
+  --muted: #9d98b3;
+  --faint: #66617a; /* solo decorativo o desactivado: no llega al contraste de texto */
 
-  /* Acento y estados */
-  --accent: #22c55e;
-  --accent-bright: #4ade80;
-  --accent-ink: #052e16; /* texto sobre el acento */
-  --accent-soft: rgba(34, 197, 94, 0.14);
-  --accent-line: rgba(34, 197, 94, 0.45);
+  /* Acento (violeta) y estados */
+  --accent: #8b7bff;
+  --accent-bright: #aea3ff;
+  --accent-deep: #6a55f0;
+  --accent-ink: #120a33; /* texto sobre el acento */
+  --accent-soft: rgba(139, 123, 255, 0.15);
+  --accent-line: rgba(139, 123, 255, 0.5);
+  --accent-glow: rgba(139, 123, 255, 0.55);
+  --success-ink: #ddd8ff;
   --danger: #ef4444;
   --danger-soft: rgba(239, 68, 68, 0.12);
   --danger-line: rgba(239, 68, 68, 0.55);
   --danger-ink: #fecaca;
   --warn: #fde68a;
   --warn-soft: rgba(234, 179, 8, 0.16);
-  --scrim: rgba(3, 7, 18, 0.62);
+  --scrim: rgba(6, 5, 12, 0.66);
   /* Logro: objetivo de proteína conseguido */
   --achieve: #fbbf24;
   --achieve-ink: #fde68a;
@@ -37,13 +41,13 @@
   --achieve-line: rgba(251, 191, 36, 0.4);
   --achieve-glow: rgba(251, 191, 36, 0.55);
   /* Anillo de proteína: pista, color inicial (neutro), acento al acercarse y logro al llegar */
-  --ring-track: rgba(148, 163, 184, 0.12);
+  --ring-track: rgba(196, 190, 230, 0.1);
   --ring-start: var(--muted);
 
-  /* Series de los gráficos, validadas (luminosidad, daltonismo y contraste) sobre #1e293b;
-     sobre --surface, más oscura, el contraste es aún mayor */
-  --series-kcal: #3987e5;
-  --series-protein: #199e70;
+  /* Series de los gráficos: la proteína con el acento y las kcal en un turquesa que se
+     distingue de él en tono y luminosidad */
+  --series-kcal: #2fb5c4;
+  --series-protein: var(--accent);
 
   /* Tipografía: Outfit para títulos, cifras y botones; la del sistema para el texto */
   --font-display: "Outfit Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -74,7 +78,7 @@
   /* Profundidad */
   --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 32px -16px rgba(0, 0, 0, 0.75);
   --shadow-pop: 0 20px 48px -12px rgba(0, 0, 0, 0.8);
-  --shadow-accent: 0 10px 28px -10px rgba(34, 197, 94, 0.6);
+  --shadow-accent: 0 10px 28px -10px var(--accent-glow);
 
   /* Movimiento */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -83,6 +87,7 @@
   --dur-slow: 320ms;
 
   --tap: 48px; /* altura mínima de lo que se toca */
+  --tabbar-h: 64px; /* barra inferior, sin contar la zona segura */
 
   color-scheme: dark;
   font-family: var(--font-body);
@@ -105,8 +110,8 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  /* Un brillo verde muy tenue arriba, detrás de la cabecera */
-  background: radial-gradient(120% 50% at 50% -12%, rgba(34, 197, 94, 0.09), transparent 62%) no-repeat,
+  /* Un brillo violeta muy tenue arriba, detrás de la cabecera */
+  background: radial-gradient(120% 50% at 50% -12%, rgba(139, 123, 255, 0.12), transparent 62%) no-repeat,
     var(--bg);
   color: var(--text);
   line-height: 1.4;
@@ -226,6 +231,11 @@ h2 {
   overflow-x: clip; /* la transición lateral no debe crear scroll horizontal */
 }
 
+/* Con la barra inferior, el contenido termina por encima de ella */
+.app.has-tabs {
+  padding-bottom: calc(var(--tabbar-h) + var(--space-5) + env(safe-area-inset-bottom));
+}
+
 /* Cabecera fija arriba (respetando la barra de estado / notch).
    Laterales del mismo ancho para que el título quede centrado. */
 header {
@@ -234,7 +244,8 @@ header {
   z-index: 5;
   margin: 0 calc(-1 * var(--space-4));
   padding: calc(var(--space-1) + env(safe-area-inset-top)) var(--space-2) var(--space-1);
-  background: rgba(11, 17, 32, 0.82);
+  min-height: calc(52px + env(safe-area-inset-top));
+  background: var(--bg-glass);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   backdrop-filter: blur(12px) saturate(140%);
   display: grid;
@@ -252,14 +263,125 @@ header {
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   font-family: var(--font-display);
   font-size: var(--fs-lg);
   font-weight: 700;
   letter-spacing: -0.03em;
 }
 
-.wordmark span {
-  color: var(--accent);
+.wordmark em {
+  font-style: normal;
+  color: var(--accent-bright);
+}
+
+/* El logo: el anillo de proteína casi cerrado con el centro dorado (como el icono) */
+.logo-mark {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+/* ---------- Barra inferior ---------- */
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-top: 1px solid var(--border);
+}
+
+.tabbar-inner {
+  max-width: 480px;
+  height: var(--tabbar-h);
+  margin: 0 auto;
+  padding: 0 var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+}
+
+.tab {
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--dur) ease;
+}
+
+/* La pastilla detrás del icono marca la pestaña activa */
+.tab-pill {
+  width: 52px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  transition: background-color var(--dur) ease, transform var(--dur-fast) var(--ease-out);
+}
+
+.tab .ico {
+  width: 22px;
+  height: 22px;
+}
+
+.tab:active .tab-pill {
+  transform: scale(0.92);
+}
+
+.tab[aria-current="page"] {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tab[aria-current="page"] .tab-pill {
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+}
+
+/* Botón central de cámara: sobresale de la barra */
+.tab-fab {
+  justify-self: center;
+  width: 60px;
+  height: 60px;
+  margin-top: -26px;
+  border: 4px solid var(--bg);
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--accent-bright), var(--accent) 45%, var(--accent-deep));
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 24px -8px var(--accent-glow);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur) ease;
+}
+
+.tab-fab .ico {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.2;
+}
+
+.tab-fab:active {
+  transform: scale(0.93);
+  filter: brightness(0.92);
 }
 
 /* Cada pantalla entra con una transición corta. Sin fill-mode a propósito: una
@@ -361,7 +483,7 @@ header {
 }
 
 .icon:active:not(:disabled) {
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(196, 190, 230, 0.13);
   transform: scale(0.92);
 }
 
@@ -414,7 +536,7 @@ header {
 
 .btn.primary:active:not(:disabled) {
   filter: brightness(0.9);
-  box-shadow: 0 4px 14px -6px rgba(34, 197, 94, 0.55);
+  box-shadow: 0 4px 14px -6px var(--accent-glow);
 }
 
 .btn.primary:disabled {
@@ -579,7 +701,7 @@ button.link {
   padding-right: 40px;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239d98b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   cursor: pointer;
@@ -613,12 +735,12 @@ button.link {
 .success {
   background: var(--accent-soft);
   border: 1px solid var(--accent-line);
-  color: #bbf7d0;
+  color: var(--success-ink);
 }
 
 .notice {
   border-color: var(--accent-line);
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.08), transparent 70%), var(--surface);
+  background: linear-gradient(180deg, var(--accent-soft), transparent 70%), var(--surface);
   gap: var(--space-3);
 }
 
@@ -630,8 +752,20 @@ button.link {
   gap: var(--space-3);
 }
 
-.empty-state > span {
-  font-size: 2rem;
+/* Icono grande dentro de un círculo suave */
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+}
+
+.empty-icon .ico {
+  width: 30px;
+  height: 30px;
 }
 
 .empty-state p {
@@ -746,13 +880,28 @@ button.link {
   animation: msg-pop var(--dur-slow) var(--ease-out);
 }
 
-/* La acción principal, abajo y al alcance del pulgar */
+/* La acción principal, abajo y al alcance del pulgar: elegir hueco y foto o a mano */
 .home-cta {
   margin-top: auto;
   padding-top: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.home-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+}
+
+.goal-msg .ico,
+.today-note .ico {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.18em;
+  margin-left: 0.3em;
+  color: var(--achieve);
 }
 
 /* Esta semana: un mini anillo de proteína por día (--p = fracción del objetivo) */
@@ -806,7 +955,7 @@ button.link {
 }
 
 .week-day:active:not(:disabled) {
-  background: rgba(148, 163, 184, 0.12);
+  background: rgba(196, 190, 230, 0.11);
   transform: scale(0.94);
 }
 
@@ -1205,7 +1354,12 @@ button.slot.empty:active {
   display: grid;
   place-items: center;
   background: var(--surface-sunken);
-  font-size: 1.4rem;
+  color: var(--faint);
+}
+
+.thumb.empty .ico {
+  width: 26px;
+  height: 26px;
 }
 
 .thumb.large {
@@ -1300,8 +1454,8 @@ button.slot.empty:active {
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(74, 222, 128, 0.22) 85%,
-    rgba(74, 222, 128, 0.95) 99%,
+    rgba(174, 163, 255, 0.22) 85%,
+    rgba(174, 163, 255, 0.95) 99%,
     transparent
   );
   animation: scan 1.8s ease-in-out infinite;
@@ -1326,9 +1480,9 @@ button.slot.empty:active {
   border-radius: var(--radius-sm);
   background: linear-gradient(
     90deg,
-    rgba(148, 163, 184, 0.07) 25%,
-    rgba(148, 163, 184, 0.17) 37%,
-    rgba(148, 163, 184, 0.07) 63%
+    rgba(196, 190, 230, 0.06) 25%,
+    rgba(196, 190, 230, 0.15) 37%,
+    rgba(196, 190, 230, 0.06) 63%
   );
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
@@ -1585,47 +1739,7 @@ button.slot.empty:active {
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Menú lateral y calendario ---------- */
-
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  background: var(--scrim);
-  animation: fade-in var(--dur) ease;
-}
-
-.menu-panel {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: min(86vw, 340px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  box-shadow: var(--shadow-pop);
-  padding: calc(var(--space-4) + env(safe-area-inset-top)) var(--space-4)
-    calc(var(--space-4) + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  animation: slide-in var(--dur-slow) var(--ease-out);
-  outline: none;
-}
-
-@keyframes slide-in {
-  from {
-    transform: translateX(-100%);
-  }
-}
-
-.menu-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+/* ---------- Calendario ---------- */
 
 .cal-head {
   display: flex;
@@ -1728,7 +1842,7 @@ button.slot.empty:active {
 }
 
 .cal-legend .dot {
-  background: rgba(34, 197, 94, 0.35);
+  background: var(--accent-line);
 }
 
 .cal-legend .ring {
@@ -1736,46 +1850,25 @@ button.slot.empty:active {
   border: 2px solid var(--accent);
 }
 
-.menu-links {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  border-top: 1px solid var(--border);
-  padding-top: var(--space-3);
-}
-
-.menu-link {
-  display: flex;
+/* Pantalla Calendario: el mes y, debajo, el resumen del día elegido */
+.cal-day-peek {
+  width: 100%;
+  flex-direction: row; /* .card apila en columna */
   align-items: center;
-  gap: var(--space-3);
-  min-height: var(--tap);
-  padding: var(--space-3);
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: var(--font-display);
-  font-weight: 500;
+  gap: var(--space-4);
+  color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur) ease;
 }
 
-.menu-link .ico {
-  width: 20px;
-  height: 20px;
-  color: var(--muted);
+.cal-day-peek:active {
+  transform: scale(0.985);
+  border-color: var(--border-strong);
 }
 
-.menu-link:active:not(:disabled) {
-  background: var(--surface-raised);
-  transform: scale(0.98);
-}
-
-@media (hover: hover) {
-  .menu-link:hover:not(:disabled) {
-    background: var(--surface-raised);
-  }
+.cal-day-peek .slot-info {
+  gap: var(--space-1);
 }
 
 /* ---------- ¿Qué pido? (recomendador de menús) ---------- */
@@ -1814,7 +1907,7 @@ button.slot.empty:active {
   position: absolute;
   inset: 0 0 auto;
   height: 40%;
-  background: linear-gradient(180deg, transparent, rgba(74, 222, 128, 0.22) 85%, rgba(74, 222, 128, 0.95) 99%, transparent);
+  background: linear-gradient(180deg, transparent, rgba(174, 163, 255, 0.22) 85%, rgba(174, 163, 255, 0.95) 99%, transparent);
   animation: scan 1.8s ease-in-out infinite;
 }
 
@@ -2139,7 +2232,7 @@ button.menu-photo.add .ico {
 }
 
 .chart .hit:focus-visible {
-  fill: rgba(148, 163, 184, 0.12);
+  fill: rgba(196, 190, 230, 0.11);
 }
 
 .chart-tip {
@@ -2284,13 +2377,17 @@ button.menu-photo.add .ico {
   pointer-events: none;
 }
 
+.has-tabs .toast-region {
+  bottom: calc(var(--tabbar-h) + var(--space-3) + env(safe-area-inset-bottom));
+}
+
 .toast {
   width: 100%;
   max-width: 448px;
   min-height: 52px;
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
-  background: #e2e8f0;
+  background: #ece9f7;
   color: var(--bg);
   box-shadow: var(--shadow-pop);
   display: flex;
@@ -2309,14 +2406,14 @@ button.menu-photo.add .ico {
   border: none;
   border-radius: var(--radius-sm);
   background: none;
-  color: #15803d;
+  color: #4f37d6;
   font-family: var(--font-display);
   font-weight: 700;
   cursor: pointer;
 }
 
 .toast-action:active {
-  background: rgba(21, 128, 61, 0.12);
+  background: rgba(79, 55, 214, 0.12);
 }
 
 @keyframes toast-in {
