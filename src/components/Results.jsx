@@ -1,10 +1,16 @@
-import { round, scaled, sumTotals } from "../lib/nutrition.js";
+import { useState } from "react";
+import { EXTRAS, fmtGrams, round, scaled, sumTotals } from "../lib/nutrition.js";
 import Icon from "./Icon.jsx";
+import { ExtraNutrients, MacroSplit } from "./MacroDetail.jsx";
 
 const STEP = 10; // gramos por toque de − / +
 
 export default function Results({ dishes, confianza, notas, readOnly, onGramsChange, onRemove }) {
   const t = sumTotals(dishes);
+  const [open, setOpen] = useState(null); // plato desplegado
+  // Un nutriente que solo tienen algunos platos (los apuntados a mano no suelen llevarlo)
+  // se suma igual, pero se avisa de que falta el de los demás.
+  const partial = EXTRAS.some(({ key }) => t[key] != null && dishes.some((d) => d[key] == null));
 
   return (
     <div className="card">
@@ -28,12 +34,16 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
             </div>
           ))}
         </div>
+        <MacroSplit totals={t} />
+        <ExtraNutrients totals={t} />
+        {partial && <p className="hint">Fibra, azúcares, grasas saturadas y sal: solo de los platos que los tienen.</p>}
         {confianza && <div className={`badge ${confianza}`}>Confianza {confianza}</div>}
       </div>
 
       <ul className="dishes">
         {dishes.map((d, i) => {
           const s = scaled(d);
+          const expanded = open === i;
           return (
             <li key={i}>
               <div className="dish-head">
@@ -78,11 +88,18 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
                     </button>
                   </span>
                 )}
-                <span className="dish-macros">
+                <button
+                  className="dish-macros"
+                  onClick={() => setOpen(expanded ? null : i)}
+                  aria-expanded={expanded}
+                  aria-label={`${expanded ? "Ocultar" : "Ver"} el detalle de ${d.nombre}`}
+                >
                   {round(s.kcal)} kcal · P {round(s.proteina_g)} · C {round(s.carbohidratos_g)} · G{" "}
                   {round(s.grasas_g)}
-                </span>
+                  <Icon name="next" className="chevron" />
+                </button>
               </div>
+              {expanded && <DishDetail totals={s} />}
             </li>
           );
         })}
@@ -92,6 +109,29 @@ export default function Results({ dishes, confianza, notas, readOnly, onGramsCha
       {!readOnly && (
         <p className="hint">Estimación aproximada. Ajusta los gramos si conoces la ración real.</p>
       )}
+    </div>
+  );
+}
+
+/** Detalle de un plato: sus macros completos, los nutrientes que tenga y el reparto de kcal. */
+function DishDetail({ totals }) {
+  const rows = [
+    { key: "proteina_g", label: "Proteína" },
+    { key: "carbohidratos_g", label: "Carbohidratos" },
+    { key: "grasas_g", label: "Grasas" },
+    ...EXTRAS,
+  ].filter(({ key }) => totals[key] != null);
+  return (
+    <div className="dish-detail">
+      <dl className="extras">
+        {rows.map(({ key, label }) => (
+          <div key={key}>
+            <dt>{label}</dt>
+            <dd className="num">{fmtGrams(totals[key])} g</dd>
+          </div>
+        ))}
+      </dl>
+      <MacroSplit totals={totals} />
     </div>
   );
 }

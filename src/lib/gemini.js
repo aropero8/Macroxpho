@@ -9,7 +9,8 @@ const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 const PROMPT = `Eres un nutricionista experto en estimar macronutrientes a partir de fotos de comida.
 Analiza la imagen e identifica cada plato o alimento distinto. Para cada uno estima
-la porción en gramos y sus kcal, proteína, carbohidratos y grasas de esa porción.
+la porción en gramos y, de esa porción, sus kcal, proteína, carbohidratos y grasas, y
+además fibra, azúcares, grasas saturadas y sal (en gramos; la sal, no el sodio).
 Usa referencias visuales (tamaño del plato, cubiertos, manos) para calibrar las raciones.
 Si el usuario añade una nota, tenla en cuenta y respeta cantidades que indique.
 Si la imagen no contiene comida, devuelve es_comida=false y platos vacío.
@@ -31,6 +32,10 @@ const SCHEMA = {
           proteina_g: { type: "NUMBER" },
           carbohidratos_g: { type: "NUMBER" },
           grasas_g: { type: "NUMBER" },
+          fibra_g: { type: "NUMBER" },
+          azucares_g: { type: "NUMBER" },
+          grasas_sat_g: { type: "NUMBER" },
+          sal_g: { type: "NUMBER" },
         },
         required: [
           "nombre",
@@ -39,6 +44,10 @@ const SCHEMA = {
           "proteina_g",
           "carbohidratos_g",
           "grasas_g",
+          "fibra_g",
+          "azucares_g",
+          "grasas_sat_g",
+          "sal_g",
         ],
       },
     },
