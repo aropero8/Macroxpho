@@ -1528,54 +1528,344 @@ button.slot.empty:active {
   }
 }
 
-/* Apuntar a mano: plato y ración arriba, macros en dos columnas */
+/* Apuntar a mano: plato con buscador, ración y kcal, los tres macros en fila y un
+   resumen en vivo de lo que se va a añadir */
 .manual {
-  gap: var(--space-3);
+  gap: var(--space-4);
   animation: fade-in var(--dur) ease;
 }
 
 .manual-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin: -10px -10px -4px 0; /* el botón de cerrar no añade altura a la cabecera */
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: -6px -10px 0 0; /* el botón de cerrar no añade altura a la cabecera */
 }
 
 .manual-head h3 {
   font-size: var(--fs-lg);
+  margin-bottom: 2px;
 }
+
+.manual .field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.manual .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+}
+
+.manual .dot.proteina { --c: var(--macro-protein); }
+.manual .dot.carbohidratos { --c: var(--macro-carbs); }
+.manual .dot.grasas { --c: var(--macro-fat); }
 
 .manual-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
+}
+
+.manual-grid.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.manual-grid.three {
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
 }
 
 .manual-grid .field {
   min-width: 0;
 }
 
-.manual-grid .wide {
+/* Número con su unidad dentro del campo, a la derecha */
+.unit-input {
+  position: relative;
+  display: flex;
+}
+
+.unit-input input {
+  width: 100%;
+  min-width: 0;
+  padding-right: 42px;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit-input input::placeholder {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  color: var(--faint);
+}
+
+.unit-input .unit {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.manual-grid.three .unit-input input {
+  padding-left: 12px;
+  padding-right: 26px;
+}
+
+.manual-grid.three .unit-input .unit {
+  right: 10px;
+}
+
+/* Buscador de platos ya apuntados: una lista propia, opaca, en vez del datalist del
+   sistema (que en Android sale translúcido y sin estilo) */
+.combo {
+  position: relative;
+  display: flex;
+}
+
+.combo input {
+  width: 100%;
+  min-width: 0;
+  padding-left: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%239d98b3' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='M16 16l4 4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+}
+
+.combo-list {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: min(320px, 50dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: var(--space-1);
+  list-style: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-pop);
+  animation: combo-in var(--dur) var(--ease-out);
+}
+
+@keyframes combo-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.combo-title {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.combo-list [role="option"] {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--space-3);
+  row-gap: 2px;
+  align-items: baseline;
+  min-height: var(--tap);
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease;
+}
+
+.combo-list [role="option"] + [role="option"] {
+  box-shadow: 0 -1px 0 var(--border); /* separador sin ocupar alto */
+}
+
+.combo-list [role="option"]:active,
+.combo-list [role="option"].active {
+  background: var(--surface-pressed);
+  box-shadow: none;
+}
+
+@media (hover: hover) {
+  .combo-list [role="option"]:hover {
+    background: var(--surface-pressed);
+  }
+}
+
+.combo-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.combo-name mark {
+  background: none;
+  color: var(--accent-bright);
+}
+
+.combo-date {
+  grid-row: 1;
+  grid-column: 2;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.combo-meta {
   grid-column: 1 / -1;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.combo-meta strong {
+  color: var(--accent-bright);
+  font-weight: 600;
+}
+
+/* De qué plato anterior salen los números */
+.manual-ref {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: calc(var(--space-1) * -1) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--success-ink);
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  animation: fade-in var(--dur) ease;
+}
+
+.manual-ref .ico {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-bright);
 }
 
 /* Nutrientes adicionales, plegados: casi nunca se saben */
 .manual-more summary {
-  min-height: var(--tap);
+  min-height: 44px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
   font-size: var(--fs-sm);
-  color: var(--accent-bright);
+  color: var(--text-soft);
+  list-style: none;
   cursor: pointer;
 }
 
-.manual-more .manual-grid {
-  padding-bottom: var(--space-2);
+.manual-more summary::-webkit-details-marker {
+  display: none;
 }
 
-.manual-grid input {
-  width: 100%;
-  min-width: 0;
+.manual-more summary::before {
+  content: "+";
+  margin-right: var(--space-2);
+  color: var(--accent-bright);
+  font-size: var(--fs-lg);
+  line-height: 1;
+}
+
+.manual-more summary span {
+  flex: 1;
+}
+
+.manual-more .chev {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.manual-more[open] summary {
+  border-style: solid;
+}
+
+.manual-more[open] summary::before {
+  content: "−";
+}
+
+.manual-more[open] .chev {
+  transform: rotate(90deg);
+}
+
+.manual-more .manual-grid {
+  padding-top: var(--space-3);
+}
+
+/* Resumen en vivo de lo que se va a añadir */
+.manual-sum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  animation: fade-in var(--dur) ease;
+}
+
+.manual-sum-nums {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.manual-sum-nums > .num {
+  font-size: var(--fs-xl);
+  line-height: 1.1;
+}
+
+.manual-sum-nums > .num small {
+  font-size: var(--fs-sm);
+  margin-left: 4px;
+  color: var(--muted);
+}
+
+.manual-sum-prot {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.manual-sum-prot strong {
+  font-size: var(--fs-lg);
+  color: var(--accent-bright);
+}
+
+/* Botón secundario teñido del acento: la acción principal sigue siendo Guardar */
+.btn.tonal {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent-bright);
+  font-weight: 600;
+}
+
+.btn.tonal:active:not(:disabled) {
+  background: rgba(139, 123, 255, 0.24);
 }
 
 /* ---------- Resultado del análisis ---------- */
