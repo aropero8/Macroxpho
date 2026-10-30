@@ -12,6 +12,7 @@ const SETTINGS_KEY = "macrosnap.settings";
 const API_KEY_KEY = "macrosnap.apiKey";
 const MODEL_KEY = "macrosnap.model"; // ya no se usa: el modelo se elige solo (ver gemini.js)
 const CELEBRATED_KEY = "macrosnap.celebrated"; // último día en que se celebró el objetivo
+const MENUS_KEY = "macrosnap.menus"; // recomendaciones guardadas de "¿Qué pido?"
 
 export const DATA_VERSION = 1;
 export const SLOTS = ["desayuno", "comida", "cena"];
@@ -244,6 +245,32 @@ export function markGoalCelebrated(key) {
   }
 }
 
+/* ---------- Recomendaciones guardadas ("¿Qué pido?") ---------- */
+
+// Formato en MENUS_KEY, de la más reciente a la más antigua:
+//   [{ id, savedAt, titulo, nota, notas, veredicto, confianza, fotos, options }]
+// `nota` son las preferencias que se le dieron a Gemini y `notas`, las de la persona.
+// Las miniaturas de las `fotos` van en IndexedDB (thumbs.js, menuThumbId).
+export function listMenus() {
+  const list = readJSON(MENUS_KEY);
+  return Array.isArray(list) ? list : [];
+}
+
+/** Crea o actualiza una recomendación guardada (al actualizarla no cambia de sitio). */
+export function saveMenu(menu) {
+  const full = { ...menu, id: menu.id || newId(), savedAt: menu.savedAt || new Date().toISOString() };
+  const list = listMenus();
+  const next = list.some((m) => m.id === full.id)
+    ? list.map((m) => (m.id === full.id ? full : m))
+    : [full, ...list];
+  localStorage.setItem(MENUS_KEY, JSON.stringify(next));
+  return full;
+}
+
+export function deleteMenu(id) {
+  localStorage.setItem(MENUS_KEY, JSON.stringify(listMenus().filter((m) => m.id !== id)));
+}
+
 /* ---------- Copia de seguridad ---------- */
 
 // La API key NO se incluye en la copia a propósito. Las miniaturas tampoco
@@ -256,6 +283,7 @@ export function exportBackup() {
       exportedAt: new Date().toISOString(),
       settings: getSettings(),
       days: load().days,
+      menus: listMenus(),
     },
     null,
     2
@@ -278,7 +306,11 @@ function parseBackup(text) {
 /** Valida una copia sin importarla. Devuelve { days, exportedAt } para mostrarlo antes de confirmar. */
 export function inspectBackup(text) {
   const parsed = parseBackup(text);
-  return { days: Object.keys(parsed.days).length, exportedAt: parsed.exportedAt ?? null };
+  return {
+    days: Object.keys(parsed.days).length,
+    menus: Array.isArray(parsed.menus) ? parsed.menus.length : null, // null: copia anterior
+    exportedAt: parsed.exportedAt ?? null,
+  };
 }
 
 /** Sustituye todos los datos por los de la copia. Devuelve el número de días importados. */
@@ -287,5 +319,7 @@ export function importBackup(text) {
   const data = migrate({ version: parsed.version, days: parsed.days });
   persist(data);
   if (parsed.settings) saveSettings({ ...DEFAULT_SETTINGS, ...parsed.settings });
+  // Las copias anteriores no traen recomendaciones: se conservan las que haya
+  if (Array.isArray(parsed.menus)) localStorage.setItem(MENUS_KEY, JSON.stringify(parsed.menus));
   return Object.keys(data.days).length;
 }

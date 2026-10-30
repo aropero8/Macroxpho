@@ -57,7 +57,11 @@ export default function Settings({ apiKey, settings, onSave, onClose, onImported
         : "";
       const ok = await confirm({
         title: "¿Importar la copia?",
-        message: `La copia${when} tiene ${info.days} ${info.days === 1 ? "día" : "días"}. Sustituirá todos los días y objetivos guardados en este dispositivo. Si tienes dudas, exporta antes una copia de lo actual.`,
+        message: `La copia${when} tiene ${info.days} ${info.days === 1 ? "día" : "días"}${
+          info.menus ? ` y ${info.menus} ${info.menus === 1 ? "recomendación guardada" : "recomendaciones guardadas"}` : ""
+        }. Sustituirá todos los días y objetivos${
+          info.menus != null ? " y las recomendaciones guardadas" : ""
+        } de este dispositivo. Si tienes dudas, exporta antes una copia de lo actual.`,
         confirmLabel: "Importar",
         danger: true,
       });
