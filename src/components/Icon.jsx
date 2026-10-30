@@ -45,6 +45,7 @@ const PATHS = {
     </>
   ),
   chart: <path d="M6 20V11M12 20V5M18 20v-7" />,
+  bookmark: <path d="M7 4.5h10V20l-5-3.5L7 20z" />,
   home: <path d="M4 11l8-6.5 8 6.5M6.5 9.5V19h11V9.5M10 19v-5h4v5" />,
   trophy: (
     <path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3.5M9 20h6l-.5-3.5h-5z" />

@@ -4,7 +4,7 @@
 // devuelven false/null y la app sigue funcionando sin miniaturas.
 const DB_NAME = "macrosnap";
 const THUMBS = "thumbs";
-const PHOTOS = "photos"; // { base64, mimeType, note } por id de comida
+const PHOTOS = "photos"; // { base64, mimeType, note } por id de comida, y el borrador de "¿Qué pido?"
 const STORES = [THUMBS, PHOTOS];
 
 let dbPromise = null;
@@ -73,3 +73,13 @@ export const deleteThumb = (id) => remove(THUMBS, id);
 export const putPhoto = (id, photo) => put(PHOTOS, id, photo);
 export const getPhoto = (id) => get(PHOTOS, id);
 export const deletePhoto = (id) => remove(PHOTOS, id);
+
+/** Miniatura de la foto n (desde 1) de una recomendación guardada de "¿Qué pido?". */
+export const menuThumbId = (menuId, n) => `${menuId}-f${n}`;
+
+// La recomendación de "¿Qué pido?" en curso, con sus fotos a tamaño de análisis, para no
+// perderla al salir de la pantalla o cerrar la app. Solo hay una.
+const MENU_DRAFT = "menu-draft";
+export const putMenuDraft = (draft) => put(PHOTOS, MENU_DRAFT, draft);
+export const getMenuDraft = () => get(PHOTOS, MENU_DRAFT);
+export const deleteMenuDraft = () => remove(PHOTOS, MENU_DRAFT);
